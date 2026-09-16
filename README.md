@@ -1,33 +1,69 @@
-# Course Site Mockup
+# Course Site
 
-A static, no-backend preview of the course site: homepage with categories,
-a category/course listing page, an admin screen for adding categories
-(saved to your browser only — not a real database yet), and light/dark
-mode. Fully responsive for mobile.
+Course catalogue site: homepage with categories, category/course listing
+pages, and a token-protected admin screen. Light/dark mode, responsive.
 
-## Try it locally first
-Just open `index.html` in a browser — no install needed. Try the dark
-mode toggle, click into a category, and add a category from Admin to see
-it appear on the homepage.
+Live: https://cupcourse.netlify.app · Repo: https://github.com/Axofox/coursey
 
-## Deploy to GitHub + Netlify
+## How it's built
 
-1. Create a new empty repository on GitHub (e.g. `course-website-mockup`).
-2. Upload these files to it — easiest way: on the repo page, click
-   "Add file" → "Upload files", drag in everything from this folder, and
-   commit.
-3. Go to netlify.com, sign up free, click "Add new site" →
-   "Import an existing project" → connect GitHub → pick this repo.
-4. Leave the build settings empty (no build command needed, this is
-   plain HTML/CSS/JS) and deploy.
-5. Netlify gives you a live URL like `yoursite.netlify.app` — that's your
-   real, shareable mockup.
+```
+public/                    static frontend (no build step)
+  index.html               homepage — category grid
+  category.html            one category + its courses (?id=slug)
+  admin.html               admin — sign in with ADMIN_TOKEN, manage content
+  api.js                   fetch wrapper for the API
+  admin.js                 admin page logic
+  script.js                theme, nav, public page rendering
+netlify/functions/api.mjs  JSON API (Netlify Functions v2), routes /api/*
+netlify/lib/db.mjs         Postgres access, schema + first-run seed data
+netlify.toml               publish dir, function bundler settings
+```
 
-## What's a placeholder vs. what's real
+- **Database:** Postgres. Uses `DATABASE_URL` if set, otherwise Netlify
+  Database's connection string. The schema is created automatically on the
+  first request and seeded with the three starter categories if empty.
+- **Auth:** reads are public; every write requires
+  `Authorization: Bearer <ADMIN_TOKEN>`. The token is an environment
+  variable on Netlify (and in the gitignored `.env` locally).
+- **Portability:** standard `pg` driver, plain SQL, standard web
+  Request/Response handlers. To move hosts: `pg_dump` → `pg_restore`,
+  set `DATABASE_URL`, done.
 
-- Categories/courses: placeholder data, editable via Admin, stored in
-  your browser's local storage only (not shared across devices/visitors).
-- No logins, no payments, no real database yet — those come once a
-  backend (e.g. Supabase) is added in the next phase.
-- Design, layout, and navigation are real and will carry over directly
-  into the fuller build.
+## API
+
+| Method | Path                    | Auth  | Body                                                    |
+|--------|-------------------------|-------|---------------------------------------------------------|
+| GET    | /api/categories         | —     |                                                         |
+| GET    | /api/categories/:id     | —     |                                                         |
+| POST   | /api/categories         | token | `{ name, description }`                                 |
+| PUT    | /api/categories/:id     | token | `{ name?, description? }`                               |
+| DELETE | /api/categories/:id     | token | (also deletes its courses)                              |
+| POST   | /api/courses            | token | `{ category_id, title, description?, level?, lessons? }`|
+| PUT    | /api/courses/:id        | token | `{ title?, description?, level?, lessons? }`            |
+| DELETE | /api/courses/:id        | token |                                                         |
+| GET    | /api/auth/check         | token | 204 if the token is valid                               |
+
+`level` is one of `Beginner`, `Intermediate`, `Advanced`.
+
+## Environment variables
+
+| Name           | Where                    | Purpose                                  |
+|----------------|--------------------------|------------------------------------------|
+| `ADMIN_TOKEN`  | Netlify env vars, `.env` | required for all write endpoints         |
+| `DATABASE_URL` | optional                 | override the Postgres connection string  |
+
+## Local development
+
+```bash
+npx netlify login      # once
+npx netlify link       # once — pick the cupcourse site
+npx netlify dev        # serves public/ + functions on http://localhost:8888
+```
+
+`netlify dev` pulls the site's environment variables (including the
+database) automatically, and also reads `.env`.
+
+## Deploy
+
+Push to `main` — Netlify deploys automatically from GitHub.

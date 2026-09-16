@@ -30,10 +30,21 @@ function initMobileNav() {
 }
 
 /* ---------- Homepage: render categories ---------- */
-function renderHomeCategories() {
+async function renderHomeCategories() {
   const grid = document.querySelector("[data-category-grid]");
   if (!grid) return;
-  const categories = loadCategories();
+  grid.innerHTML = `<p class="muted">Loading…</p>`;
+  let categories;
+  try {
+    categories = await fetchCategories();
+  } catch (e) {
+    grid.innerHTML = `<p class="muted">Couldn't load categories right now. Please try again in a moment.</p>`;
+    return;
+  }
+  if (!categories.length) {
+    grid.innerHTML = `<p class="muted">No categories yet.</p>`;
+    return;
+  }
   grid.innerHTML = categories.map((cat) => `
     <a class="card category-block" href="category.html?id=${encodeURIComponent(cat.id)}">
       <span class="tag">${cat.courses.length} course${cat.courses.length === 1 ? "" : "s"}</span>
@@ -44,89 +55,50 @@ function renderHomeCategories() {
 }
 
 /* ---------- Category page ---------- */
-function renderCategoryPage() {
+async function renderCategoryPage() {
   const container = document.querySelector("[data-category-page]");
   if (!container) return;
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
-  const categories = loadCategories();
-  const cat = categories.find((c) => c.id === id) || categories[0];
+  container.innerHTML = `<p class="muted">Loading…</p>`;
 
+  let cat = null;
+  try {
+    cat = id ? await fetchCategory(id) : null;
+  } catch (e) {
+    if (e.status !== 404) {
+      container.innerHTML = `<p class="muted">Couldn't load this category right now.</p>`;
+      return;
+    }
+  }
   if (!cat) {
-    container.innerHTML = "<p>No categories yet. Add one from the admin screen.</p>";
+    container.innerHTML = `<h1>Category not found</h1><p class="muted">It may have been removed.</p>`;
     return;
   }
 
   document.title = cat.name + " — Course Site";
   container.innerHTML = `
     <h1>${escapeHtml(cat.name)}</h1>
-    <p style="color:var(--text-muted); max-width:520px;">${escapeHtml(cat.description)}</p>
+    <p class="muted" style="max-width:520px;">${escapeHtml(cat.description)}</p>
     <div class="grid" style="margin-top:32px;">
-      ${cat.courses.map((course) => `
+      ${cat.courses.length ? cat.courses.map((course) => `
         <div class="card">
           <span class="tag">${escapeHtml(course.level)}</span>
           <h3>${escapeHtml(course.title)}</h3>
+          ${course.description ? `<p>${escapeHtml(course.description)}</p>` : ""}
           <div class="meta">
-            <span>${course.lessons} lessons</span>
+            <span>${course.lessons} lesson${course.lessons === 1 ? "" : "s"}</span>
             <span>Preview</span>
           </div>
         </div>
-      `).join("")}
+      `).join("") : `<p class="muted">No courses in this category yet.</p>`}
     </div>
   `;
 }
 
-/* ---------- Admin page ---------- */
-function renderAdminList() {
-  const list = document.querySelector("[data-admin-list]");
-  if (!list) return;
-  const categories = loadCategories();
-  list.innerHTML = categories.map((cat, i) => `
-    <div class="admin-list-item">
-      <span>${escapeHtml(cat.name)} <span style="color:var(--text-muted); font-size:0.85rem;">(${cat.courses.length} courses)</span></span>
-      <button class="remove-btn" data-remove="${i}">Remove</button>
-    </div>
-  `).join("") || "<p style='color:var(--text-muted)'>No categories yet.</p>";
-
-  list.querySelectorAll("[data-remove]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const idx = parseInt(btn.getAttribute("data-remove"), 10);
-      const cats = loadCategories();
-      cats.splice(idx, 1);
-      saveCategories(cats);
-      renderAdminList();
-    });
-  });
-}
-
-function initAdminForm() {
-  const form = document.querySelector("[data-admin-form]");
-  if (!form) return;
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const name = form.name.value.trim();
-    const description = form.description.value.trim();
-    if (!name) return;
-
-    const id = name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-    const categories = loadCategories();
-    categories.push({ id, name, description, courses: [] });
-    saveCategories(categories);
-
-    form.reset();
-    renderAdminList();
-
-    const notice = document.querySelector("[data-admin-notice]");
-    if (notice) {
-      notice.textContent = `"${name}" added. Check the homepage to see it live.`;
-      notice.style.display = "block";
-    }
-  });
-}
-
 function escapeHtml(str) {
   const div = document.createElement("div");
-  div.textContent = str;
+  div.textContent = str == null ? "" : String(str);
   return div.innerHTML;
 }
 
@@ -135,8 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initMobileNav();
   renderHomeCategories();
   renderCategoryPage();
-  renderAdminList();
-  initAdminForm();
+  if (typeof initAdmin === "function") initAdmin();
 
   const toggleBtn = document.querySelector("[data-theme-toggle]");
   if (toggleBtn) toggleBtn.addEventListener("click", toggleTheme);

@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
 <title>Admin — Course Site</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -15,7 +16,6 @@
     <div class="logo">Your Course Site</div>
     <nav class="nav-links" data-nav-links>
       <a href="index.html">Home</a>
-      <a href="admin.html">Admin</a>
       <button class="theme-toggle" data-theme-toggle>Dark mode</button>
     </nav>
     <button class="menu-btn" data-menu-btn>&#9776;</button>
@@ -24,41 +24,53 @@
 
 <main class="wrap" style="padding-top:40px; max-width:640px;">
   <h1 style="margin-bottom:4px;">Admin</h1>
-  <p style="color:var(--text-muted); margin-top:0;">Add and manage course categories.</p>
+  <p class="muted" style="margin-top:0;">Add and manage categories and courses. Changes go live immediately.</p>
 
   <div class="notice" data-admin-notice style="display:none;"></div>
 
-  <div class="admin-panel">
-    <h2>Add a category</h2>
-    <form data-admin-form>
+  <div class="admin-panel" data-admin-login>
+    <h2>Sign in</h2>
+    <form data-login-form>
       <div class="field">
-        <label for="name">Category name</label>
-        <input type="text" id="name" name="name" placeholder="e.g. Mindfulness" required>
+        <label for="token">Admin token</label>
+        <input type="password" id="token" name="token" autocomplete="current-password" required>
       </div>
-      <div class="field">
-        <label for="description">Short description</label>
-        <textarea id="description" name="description" rows="2" placeholder="One line describing this category"></textarea>
-      </div>
-      <button type="submit" class="btn">Add category</button>
+      <button type="submit" class="btn">Sign in</button>
     </form>
   </div>
 
-  <div class="admin-panel">
-    <h2>Existing categories</h2>
-    <div data-admin-list></div>
-  </div>
+  <div data-admin-app style="display:none;">
+    <div class="admin-panel">
+      <h2 data-category-form-title>Add a category</h2>
+      <form data-category-form>
+        <div class="field">
+          <label for="name">Category name</label>
+          <input type="text" id="name" name="name" placeholder="e.g. Mindfulness" required>
+        </div>
+        <div class="field">
+          <label for="description">Short description</label>
+          <textarea id="description" name="description" rows="2" placeholder="One line describing this category"></textarea>
+        </div>
+        <button type="submit" class="btn">Add category</button>
+        <button type="button" class="btn secondary" data-cancel style="display:none;">Cancel</button>
+      </form>
+    </div>
 
-  <p style="color:var(--text-muted); font-size:0.85rem;">
-    Note: this mockup saves categories to your browser only, so they won't appear for other visitors yet.
-    That becomes real once the site is connected to an actual database.
-  </p>
+    <div class="admin-panel">
+      <h2>Categories &amp; courses</h2>
+      <div data-admin-list><p class="muted">Loading…</p></div>
+    </div>
+
+    <p style="text-align:right;"><button class="link-btn" data-signout>Sign out</button></p>
+  </div>
 </main>
 
 <footer>
-  Mockup preview — categories are stored locally in your browser for now.
+  &copy; Your Course Site
 </footer>
 
-<script src="data.js"></script>
+<script src="api.js"></script>
+<script src="admin.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

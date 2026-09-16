@@ -1,2 +1,12 @@
 [build]
   publish = "public"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["pg", "@netlify/database"]
+
+# Never let the browser cache API responses
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store"

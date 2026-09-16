@@ -1,0 +1,15 @@
+{
+  "name": "coursey",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Course site — static frontend + Netlify Functions API on Postgres",
+  "type": "module",
+  "scripts": {
+    "dev": "netlify dev",
+    "deploy": "netlify deploy --prod"
+  },
+  "dependencies": {
+    "@netlify/database": "^1.0.0",
+    "pg": "^8.13.0"
+  }
+}
