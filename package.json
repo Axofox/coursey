@@ -9,7 +9,6 @@
     "deploy": "netlify deploy --prod"
   },
   "dependencies": {
-    "@netlify/database": "^1.0.0",
     "pg": "^8.13.0"
   }
 }

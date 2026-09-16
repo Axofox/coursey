@@ -2,31 +2,23 @@
   Database access.
 
   Plain Postgres via the standard `pg` driver. The connection string comes from
-  DATABASE_URL if set (works with any Postgres host: Neon, Supabase, Railway,
-  self-hosted...), otherwise from Netlify Database. Migrating off Netlify means
-  setting DATABASE_URL — nothing else changes.
+  DATABASE_URL (works with any Postgres host: Neon, Supabase, Railway,
+  self-hosted...). Changing hosts means changing that one variable.
 */
 import pg from "pg";
 
 let pool;
 let schemaReady;
 
-async function connectionString() {
+function connectionString() {
   if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
-  try {
-    const { getConnectionString } = await import("@netlify/database");
-    const url = getConnectionString();
-    if (url) return url;
-  } catch (e) {
-    /* package not configured — fall through */
-  }
-  throw new Error("No database configured: set DATABASE_URL or enable Netlify Database.");
+  throw new Error("No database configured: set the DATABASE_URL environment variable.");
 }
 
 async function getPool() {
   if (!pool) {
     pool = new pg.Pool({
-      connectionString: await connectionString(),
+      connectionString: connectionString(),
       ssl: { rejectUnauthorized: false },
       max: 3,
     });

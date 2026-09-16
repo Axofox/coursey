@@ -3,7 +3,7 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["pg", "@netlify/database"]
+  external_node_modules = ["pg"]
 
 # Never let the browser cache API responses
 [[headers]]

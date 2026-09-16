@@ -20,9 +20,9 @@ netlify/lib/db.mjs         Postgres access, schema + first-run seed data
 netlify.toml               publish dir, function bundler settings
 ```
 
-- **Database:** Postgres. Uses `DATABASE_URL` if set, otherwise Netlify
-  Database's connection string. The schema is created automatically on the
-  first request and seeded with the three starter categories if empty.
+- **Database:** Postgres on Neon (free tier), connected via `DATABASE_URL`.
+  The schema is created automatically on the first request and seeded with
+  the three starter categories if empty.
 - **Auth:** reads are public; every write requires
   `Authorization: Bearer <ADMIN_TOKEN>`. The token is an environment
   variable on Netlify (and in the gitignored `.env` locally).
@@ -51,7 +51,7 @@ netlify.toml               publish dir, function bundler settings
 | Name           | Where                    | Purpose                                  |
 |----------------|--------------------------|------------------------------------------|
 | `ADMIN_TOKEN`  | Netlify env vars, `.env` | required for all write endpoints         |
-| `DATABASE_URL` | optional                 | override the Postgres connection string  |
+| `DATABASE_URL` | Netlify env vars, `.env` | Postgres connection string (from Neon)   |
 
 ## Local development
 
@@ -61,8 +61,8 @@ npx netlify link       # once — pick the cupcourse site
 npx netlify dev        # serves public/ + functions on http://localhost:8888
 ```
 
-`netlify dev` pulls the site's environment variables (including the
-database) automatically, and also reads `.env`.
+`netlify dev` pulls the site's environment variables automatically, and
+also reads `.env`.
 
 ## Deploy
 
