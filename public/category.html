@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Category — Course Site</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo">Your Course Site</div>
+    <nav class="nav-links" data-nav-links>
+      <a href="index.html">Home</a>
+      <a href="admin.html">Admin</a>
+      <button class="theme-toggle" data-theme-toggle>Dark mode</button>
+    </nav>
+    <button class="menu-btn" data-menu-btn>&#9776;</button>
+  </div>
+</header>
+
+<main class="wrap" style="padding-top:40px;">
+  <p><a href="index.html" style="color:var(--text-muted); font-size:0.9rem;">&larr; Back to all categories</a></p>
+  <div data-category-page></div>
+</main>
+
+<footer>
+  Mockup preview — categories are stored locally in your browser for now.
+</footer>
+
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
