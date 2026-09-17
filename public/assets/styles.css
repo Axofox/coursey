@@ -12,16 +12,44 @@
   --success:#1F8A4C; --success-tint:#E7F5EC;
   --amber:#B7791F; --amber-tint:#FCF1DE;
   --danger:#C4432E; --danger-tint:#FBEAE6;
+  --info:#3E93C9; --info-tint:#E3F1FB;
+  --surface-elevated:#FFFFFF; --ink-disabled:#A3A3A8;
+  --accent-hover:#C8431F; --focus-ring:#C8431F;
+  --active-control-bg:#17171A; --active-control-text:#FFFFFF; --disabled-bg:#F7EEDF;
   --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-xl:20px;
   --shadow-md:0 16px 36px rgba(23,23,26,0.10);
   --font-display:'Space Grotesk', system-ui, sans-serif;
   --font-body:'IBM Plex Sans', system-ui, sans-serif;
 }
 
+/* Dark mode: graphite surfaces, violet for actions and selection. Every
+   semantic colour is redefined so no light-theme tint leaks through. */
 [data-theme="dark"]{
-  --bg:#1E1712; --surface:#2A2119; --surface-alt:#332920; --border:#3D3226; --border-strong:#4F4030;
-  --ink:#FBF3E8; --ink-soft:#C9B8A3; --ink-faint:#8F8070;
-  --accent-tint:#4A2A1A; --accent-strong:#FFA98A;
+  color-scheme:dark;
+
+  /* Foundations */
+  --bg:#0B0F19; --surface:#111827; --surface-alt:#182033; --surface-elevated:#202A3D;
+
+  /* Borders */
+  --border:#263248; --border-strong:#3A4963;
+
+  /* Typography */
+  --ink:#F8FAFC; --ink-soft:#CBD5E1; --ink-faint:#94A3B8; --ink-disabled:#64748B;
+
+  /* Brand */
+  --accent:#7C3AED; --accent-hover:#6D28D9; --accent-strong:#C4B5FD; --accent-tint:#2E2052;
+
+  /* Semantic states */
+  --success:#4ADE80; --success-tint:#123522;
+  --amber:#FBBF24; --amber-tint:#3D2D0C;
+  --danger:#FB7185; --danger-tint:#451A25;
+  --info:#60A5FA; --info-tint:#142D4F;
+
+  /* Interaction */
+  --focus-ring:#A78BFA; --active-control-bg:#7C3AED; --active-control-text:#FFFFFF; --disabled-bg:#1E293B;
+
+  /* Depth */
+  --shadow-md:0 16px 36px rgba(0,0,0,0.42), 0 1px 0 rgba(255,255,255,0.04);
 }
 
 /* ---------- Reset / base ---------- */
@@ -148,3 +176,30 @@ label{font-size:13px;font-weight:600;color:var(--ink-soft);display:block;margin-
 a:focus-visible, button:focus-visible, input:focus-visible, .pill:focus-visible{
   outline:2px solid var(--accent-strong); outline-offset:2px;
 }
+
+/* ---------- Dark-mode component corrections ----------
+   Components that baked in light-theme assumptions (e.g. the active pill used
+   --ink as a background, which is near-white in dark mode). */
+[data-theme="dark"] .btn-primary{ background:var(--accent); color:#FFFFFF; }
+[data-theme="dark"] .btn-primary:hover{ background:var(--accent-hover); }
+[data-theme="dark"] .btn-secondary{ background:var(--surface-alt); border-color:var(--border-strong); color:var(--ink); }
+[data-theme="dark"] .btn-secondary:hover{ background:var(--surface-elevated); border-color:var(--ink-faint); }
+[data-theme="dark"] .btn-danger{ background:var(--danger-tint); color:var(--danger); }
+[data-theme="dark"] .btn:disabled, [data-theme="dark"] .btn[disabled]{ background:var(--disabled-bg); color:var(--ink-disabled); border-color:transparent; cursor:not-allowed; }
+[data-theme="dark"] .pill{ background:var(--surface-alt); border-color:var(--border-strong); color:var(--ink-soft); }
+[data-theme="dark"] .pill.active{ background:var(--active-control-bg); border-color:var(--active-control-bg); color:var(--active-control-text); }
+[data-theme="dark"] .pill-outline.active{ background:var(--accent-tint); border-color:var(--accent); color:var(--accent-strong); }
+[data-theme="dark"] .input{ background:var(--surface-alt); border-color:var(--border-strong); color:var(--ink); }
+[data-theme="dark"] .input::placeholder{ color:var(--ink-faint); }
+[data-theme="dark"] .input:focus{ border-color:var(--focus-ring); outline-color:var(--focus-ring); }
+[data-theme="dark"] .input[aria-invalid="true"]{ border-color:var(--danger); }
+[data-theme="dark"] .card{ background:var(--surface); border-color:var(--border); }
+[data-theme="dark"] .iconbtn{ background:var(--surface); }
+[data-theme="dark"] .iconbtn:hover, [data-theme="dark"] .navitem:hover{ background:var(--surface-elevated); }
+[data-theme="dark"] .navitem.active{ background:var(--accent-tint); color:var(--accent-strong); }
+[data-theme="dark"] .badge-neutral{ background:var(--surface-elevated); color:var(--ink-soft); }
+[data-theme="dark"] .paybadge{ border-color:var(--border-strong); color:var(--ink-faint); }
+[data-theme="dark"] .progress-track{ background:var(--surface-elevated); }
+[data-theme="dark"] .step-dot{ background:var(--surface-alt); color:var(--ink-faint); border-color:var(--border-strong); }
+[data-theme="dark"] ::selection{ background:var(--accent-tint); color:var(--accent-strong); }
+[data-theme="dark"] a:focus-visible, [data-theme="dark"] button:focus-visible, [data-theme="dark"] input:focus-visible, [data-theme="dark"] .pill:focus-visible{ outline-color:var(--focus-ring); }

@@ -8,9 +8,17 @@
     "test": "node --test \"test/*.test.mjs\"",
     "dev": "netlify dev",
     "mock": "node scripts/mock-server.mjs",
-    "deploy": "netlify deploy --prod"
+    "deploy": "netlify deploy --prod",
+    "migrate": "node scripts/migrate.mjs",
+    "test:integration": "node --test \"test/integration/*.test.mjs\"",
+    "test:all": "npm test && npm run test:integration && npm run test:e2e",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "embedded-postgres": "^18.4.0-beta.17"
   }
 }

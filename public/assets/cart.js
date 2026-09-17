@@ -33,6 +33,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     var pay = document.querySelector("[data-pay-total]");
     var form = document.querySelector("[data-checkout-form]");
+    if (form) form.addEventListener("submit", function (e) { e.preventDefault(); });
     if (!pay) return;
     pay.addEventListener("click", function () {
       if (!H.cart.items().length) return H.toast("Your cart is empty.");

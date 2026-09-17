@@ -244,6 +244,36 @@ describe("instructor applications", () => {
   });
 });
 
+describe("abuse protection", () => {
+  test("public writes are rate limited per IP", async () => {
+    const { handler } = handlerWith([[/SELECT 1 FROM courses/, [{ 1: 1 }]], [/INSERT INTO reviews/, [{ id: 1, status: "pending" }]]]);
+    const body = { course_id: 1, name: "A", rating: 5, body: "long enough review text" };
+    const mk = (ip) => new Request("http://x/api/reviews", { method: "POST", headers: { "content-type": "application/json", "x-nf-client-connection-ip": ip }, body: JSON.stringify(body) });
+    let last;
+    for (let i = 0; i < 11; i++) last = await handler(mk("1.2.3.4"));
+    assert.equal(last.status, 429);
+    assert.equal((await handler(mk("5.6.7.8"))).status, 201); // other clients unaffected
+  });
+
+  test("repeated bad tokens are rate limited, reads are not", async () => {
+    const { handler } = handlerWith();
+    let last;
+    for (let i = 0; i < 21; i++) last = await call(handler, "GET", "/api/auth/check", { token: "guess" + i });
+    assert.equal(last.status, 429);
+    assert.equal((await call(handler, "GET", "/api/categories")).status, 200);
+  });
+
+  test("oversized bodies are refused with 413", async () => {
+    const { handler, db } = handlerWith();
+    const big = { title: "x".repeat(70 * 1024), category_id: "design" };
+    const r = await call(handler, "POST", "/api/courses", { token: TOKEN, body: big });
+    assert.equal(r.status, 413);
+    assert.equal(db.calls.length, 0);
+    const arr = await call(handler, "POST", "/api/courses", { token: TOKEN, body: "[1,2]" });
+    assert.equal(arr.status, 400);
+  });
+});
+
 describe("pure helpers", () => {
   test("slugify", () => {
     assert.equal(slugify("  Music & Production!  "), "music-production");

@@ -5,7 +5,7 @@
 <meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Coursehub — Platform Admin</title>
-<script>(function(){try{if(localStorage.getItem('coursehub-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
+<script src="assets/theme-boot.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="assets/styles.css">
 <link rel="stylesheet" href="assets/site.css">
@@ -345,34 +345,7 @@
   }
 </style>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    /* Sidebar tab titles */
-    var navButtons = document.querySelectorAll('[data-tab-group="admin"][data-tab]');
-    var titleEl = document.getElementById('admin-title');
-    navButtons.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        if (titleEl) titleEl.textContent = btn.getAttribute('data-tab-title');
-      });
-    });
-
-
-    /* Payouts: approve marks paid and removes the button */
-    document.querySelectorAll('[data-payout-approve]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var row = btn.closest('[data-payout-row]');
-        var status = row && row.querySelector('[data-payout-status]');
-        if (status) {
-          status.textContent = 'Paid';
-          status.classList.remove('badge-amber');
-          status.classList.add('badge-success');
-        }
-        btn.remove();
-      });
-    });
-
-  });
-</script>
+<script src="assets/admin-page.js"></script>
 <script src="assets/api.js"></script>
 <script src="assets/script.js"></script>
 <script src="assets/admin.js"></script>

@@ -26,6 +26,9 @@
   main h1{ font-size:34px !important; }
 }
 
+/* ---------- Disabled controls ---------- */
+.btn:disabled, .btn[disabled]{ opacity:.6; cursor:not-allowed; }
+
 /* ---------- Toast / inline notices ---------- */
 .notice{ font-size:13px; padding:12px 16px; border-radius:var(--radius-sm); background:var(--accent-tint); color:var(--accent-strong); }
 .notice-error{ background:var(--danger-tint); color:var(--danger); }
@@ -77,9 +80,10 @@ span[data-step-label]{ color:var(--ink-faint); }
 span[data-step-label].is-active{ color:var(--ink); }
 
 /* ---------- Wishlist heart ---------- */
-.heart{ width:32px; height:32px; border-radius:999px; background:rgba(255,255,255,0.85); color:var(--ink-soft); display:inline-flex; align-items:center; justify-content:center; }
+.heart{ width:32px; height:32px; border-radius:999px; background:rgba(255,255,255,0.85); color:#55555C; display:inline-flex; align-items:center; justify-content:center; }
 .heart:hover{ color:var(--accent-strong); }
-.heart.is-active{ color:var(--accent); }
+.heart.is-active{ color:#FF6B47; }
+[data-theme="dark"] .heart.is-active{ color:#7C3AED; }
 .heart.is-active svg{ fill:currentColor; }
 
 /* ---------- Form validation ---------- */

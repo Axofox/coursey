@@ -1,5 +1,5 @@
 // Shared test helpers: a scripted fake database and a request builder.
-import { createHandler } from "../netlify/functions/api.mjs";
+import { createHandler, resetRateLimits } from "../netlify/functions/api.mjs";
 
 export const TOKEN = "test-admin-token";
 
@@ -25,6 +25,7 @@ export function fakeDb(script = []) {
 }
 
 export function handlerWith(script) {
+  resetRateLimits();
   const db = fakeDb(script);
   return { handler: createHandler({ query: db.query }), db };
 }

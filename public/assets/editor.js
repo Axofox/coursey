@@ -49,6 +49,8 @@
     }
   });
 
+  $("[data-editor-form]").addEventListener("submit", function (e) { e.preventDefault(); });
+
   /* ---------- Simple fields ---------- */
   function field(name) { return $('[data-field="' + name + '"]'); }
   function getField(name) {

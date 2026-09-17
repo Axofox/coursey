@@ -8,17 +8,23 @@ import { SEED_CATEGORIES, SEED_COURSES, SEED_BUNDLES } from "../netlify/lib/seed
 
 const PUBLIC = fileURLToPath(new URL("../public/", import.meta.url));
 const TOKEN = "testtoken";
-const cats = SEED_CATEGORIES.map((c, i) => ({ ...c, sort_order: i, created_at: new Date().toISOString() }));
-let nextId = 1;
-const courses = SEED_COURSES.map((c) => ({
-  id: nextId++, language: "English", badge: null, original_price: null, resources: 0, featured: false, published: true,
-  learn: [], requirements: [], curriculum: [], ...c, created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-}));
-let nextB = 1, nextR = 1, nextA = 1;
-const bundles = SEED_BUNDLES.map((b, i) => ({ id: nextB++, name: b.name, description: b.description, price: b.price, published: true, sort_order: i,
-  course_ids: b.courses.map((t) => courses.find((c) => c.title === t)?.id).filter(Boolean), created_at: new Date().toISOString() }));
-const reviews = [{ id: nextR++, course_id: 1, name: "Jonas Weber", rating: 5, body: "Clear, structured, and actually project-based — I have a real case study now.", status: "pending", created_at: new Date().toISOString() }];
-const applications = [];
+let cats, courses, bundles, reviews, applications, nextId, nextB, nextR, nextA;
+const clone = (v) => JSON.parse(JSON.stringify(v));
+// POST /api/_reset puts everything back to the seed (used by the e2e tests)
+function reset() {
+  cats = SEED_CATEGORIES.map((c, i) => ({ ...c, sort_order: i, created_at: new Date().toISOString() }));
+  nextId = 1;
+  courses = clone(SEED_COURSES).map((c) => ({
+    id: nextId++, language: "English", badge: null, original_price: null, resources: 0, featured: false, published: true,
+    learn: [], requirements: [], curriculum: [], ...c, created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+  }));
+  nextB = 1; nextR = 1; nextA = 1;
+  bundles = SEED_BUNDLES.map((b, i) => ({ id: nextB++, name: b.name, description: b.description, price: b.price, published: true, sort_order: i,
+    course_ids: b.courses.map((t) => courses.find((c) => c.title === t)?.id).filter(Boolean), created_at: new Date().toISOString() }));
+  reviews = [{ id: nextR++, course_id: 1, name: "Jonas Weber", rating: 5, body: "Clear, structured, and actually project-based — I have a real case study now.", status: "pending", created_at: new Date().toISOString() }];
+  applications = [];
+}
+reset();
 const MIME = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".mjs": "text/javascript" };
 
 const catOf = (id) => cats.find((c) => c.id === id);
@@ -43,6 +49,7 @@ http.createServer(async (req, res) => {
   const send = (status, body) => { res.writeHead(status, { "Content-Type": "application/json" }); res.end(body === undefined ? "" : JSON.stringify(body)); };
   if (url.pathname.startsWith("/api/")) {
     const [, , resource, id] = url.pathname.split("/");
+    if (resource === "_reset" && req.method === "POST") { reset(); return send(204); }
     const admin = req.headers.authorization === "Bearer " + TOKEN;
     const isRead = (req.method === "GET" && ["categories", "courses", "stats", "bundles"].includes(resource)) || (req.method === "POST" && ["reviews", "applications"].includes(resource) && !id);
     if (!isRead && !admin) return send(401, { error: "Unauthorized" });

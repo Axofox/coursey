@@ -55,13 +55,43 @@ const isColor = (v) => /^#[0-9a-fA-F]{6}$/.test(v);
 const isHttpUrl = (v) => /^https?:\/\/\S+$/i.test(v);
 const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
+export const MAX_BODY_BYTES = 64 * 1024; // a full course record is a few KB
+
+// Returns the parsed object, null for invalid JSON, or the string "too-large".
 async function readBody(req) {
+  const declared = Number(req.headers.get("content-length") || 0);
+  if (declared > MAX_BODY_BYTES) return "too-large";
   try {
-    const body = await req.json();
-    return body && typeof body === "object" ? body : null;
+    const text = await req.text();
+    if (text.length > MAX_BODY_BYTES) return "too-large";
+    const body = JSON.parse(text);
+    return body && typeof body === "object" && !Array.isArray(body) ? body : null;
   } catch (e) {
     return null;
   }
+}
+const bodyError = (body) => (body === "too-large" ? error("Request body too large", 413) : error("Invalid JSON", 400));
+
+/*
+  Rate limiting — a sliding window per client IP, kept in memory. Netlify
+  Functions may run several instances, so this is a per-instance cap, not a
+  global guarantee; it blunts casual abuse of the public write endpoints and
+  token guessing without any extra infrastructure.
+*/
+const WINDOW_MS = 10 * 60 * 1000;
+const LIMITS = { write: 10, auth: 20 }; // per window
+const buckets = new Map();
+export function rateLimited(kind, ip, now = Date.now()) {
+  const key = kind + ":" + ip;
+  const hits = (buckets.get(key) || []).filter((t) => now - t < WINDOW_MS);
+  if (buckets.size > 5000) buckets.clear(); // keep memory bounded on a hot instance
+  hits.push(now);
+  buckets.set(key, hits);
+  return hits.length > LIMITS[kind];
+}
+export function resetRateLimits() { buckets.clear(); }
+export function clientIp(req, context) {
+  return (context && context.ip) || req.headers.get("x-nf-client-connection-ip") || req.headers.get("x-forwarded-for") || "unknown";
 }
 
 /* ---------- Validation ---------- */
@@ -257,7 +287,7 @@ export function createHandler({ query } = { query: dbQuery }) {
       case "POST": {
         if (id) return error("Not found", 404);
         const body = await readBody(req);
-        if (!body) return error("Invalid JSON", 400);
+        if (!body || body === "too-large") return bodyError(body);
         const name = clean(body.name, 100);
         if (!name) return error("name is required", 400);
         const newId = slugify(name);
@@ -277,7 +307,7 @@ export function createHandler({ query } = { query: dbQuery }) {
       case "PUT": {
         if (!id) return error("Not found", 404);
         const body = await readBody(req);
-        if (!body) return error("Invalid JSON", 400);
+        if (!body || body === "too-large") return bodyError(body);
         const name = body.name !== undefined ? clean(body.name, 100) : undefined;
         if (name === "") return error("name cannot be empty", 400);
         const description = body.description !== undefined ? clean(body.description, 300) : undefined;
@@ -328,7 +358,7 @@ export function createHandler({ query } = { query: dbQuery }) {
       case "POST": {
         if (courseId !== undefined) return error("Not found", 404);
         const body = await readBody(req);
-        if (!body) return error("Invalid JSON", 400);
+        if (!body || body === "too-large") return bodyError(body);
         const { fields, error: msg } = parseFields(COURSE_FIELDS, body, { creating: true });
         if (msg) return error(msg, 400);
         const cat = await query("SELECT 1 FROM categories WHERE id = $1", [fields.category_id]);
@@ -346,7 +376,7 @@ export function createHandler({ query } = { query: dbQuery }) {
       case "PUT": {
         if (courseId === undefined) return error("Not found", 404);
         const body = await readBody(req);
-        if (!body) return error("Invalid JSON", 400);
+        if (!body || body === "too-large") return bodyError(body);
         const { fields, error: msg } = parseFields(COURSE_FIELDS, body, { creating: false });
         if (msg) return error(msg, 400);
         if (fields.category_id) {
@@ -387,7 +417,7 @@ export function createHandler({ query } = { query: dbQuery }) {
       case "POST": {
         if (bundleId !== undefined) return error("Not found", 404);
         const body = await readBody(req);
-        if (!body) return error("Invalid JSON", 400);
+        if (!body || body === "too-large") return bodyError(body);
         const { fields, error: msg } = parseFields(BUNDLE_FIELDS, body, { creating: true });
         if (msg) return error(msg, 400);
         const { rows: next } = await query("SELECT COALESCE(max(sort_order), -1) + 1 AS next FROM bundles");
@@ -403,7 +433,7 @@ export function createHandler({ query } = { query: dbQuery }) {
       case "PUT": {
         if (bundleId === undefined) return error("Not found", 404);
         const body = await readBody(req);
-        if (!body) return error("Invalid JSON", 400);
+        if (!body || body === "too-large") return bodyError(body);
         const { fields, error: msg } = parseFields(BUNDLE_FIELDS, body, { creating: false });
         if (msg) return error(msg, 400);
         const keys = Object.keys(fields);
@@ -430,7 +460,7 @@ export function createHandler({ query } = { query: dbQuery }) {
   async function handleReviews(req, id, admin, url) {
     if (req.method === "POST" && id === undefined) {
       const body = await readBody(req);
-      if (!body) return error("Invalid JSON", 400);
+      if (!body || body === "too-large") return bodyError(body);
       if (clean(body.website)) return noContent(); // honeypot field: bots fill it, people don't
       const course_id = Number(body.course_id);
       const name = clean(body.name, 80);
@@ -472,6 +502,7 @@ export function createHandler({ query } = { query: dbQuery }) {
       case "PUT": {
         if (reviewId === undefined) return error("Not found", 404);
         const body = await readBody(req);
+        if (body === "too-large") return bodyError(body);
         if (!body || !REVIEW_STATUSES.includes(body.status)) return error("status must be pending or approved", 400);
         const { rows } = await query("UPDATE reviews SET status = $2 WHERE id = $1 RETURNING *", [reviewId, body.status]);
         return rows[0] ? json(rows[0]) : error("Review not found", 404);
@@ -490,7 +521,7 @@ export function createHandler({ query } = { query: dbQuery }) {
   async function handleApplications(req, id, admin) {
     if (req.method === "POST" && id === undefined) {
       const body = await readBody(req);
-      if (!body) return error("Invalid JSON", 400);
+      if (!body || body === "too-large") return bodyError(body);
       if (clean(body.website)) return noContent(); // honeypot
       const name = clean(body.name, 120);
       const email = clean(body.email, 200).toLowerCase();
@@ -520,6 +551,7 @@ export function createHandler({ query } = { query: dbQuery }) {
       case "PUT": {
         if (appId === undefined) return error("Not found", 404);
         const body = await readBody(req);
+        if (body === "too-large") return bodyError(body);
         if (!body || !APPLICATION_STATUSES.includes(body.status)) return error(`status must be one of: ${APPLICATION_STATUSES.join(", ")}`, 400);
         const { rows } = await query("UPDATE instructor_applications SET status = $2 WHERE id = $1 RETURNING *", [appId, body.status]);
         return rows[0] ? json(rows[0]) : error("Application not found", 404);
@@ -546,7 +578,7 @@ export function createHandler({ query } = { query: dbQuery }) {
   }
 
   /* ---------- Router ---------- */
-  return async function handler(req) {
+  return async function handler(req, context) {
     const url = new URL(req.url);
     const [, , resource, id, extra] = url.pathname.split("/"); // ["", "api", resource, id?]
     if (extra !== undefined) return error("Not found", 404);
@@ -554,10 +586,14 @@ export function createHandler({ query } = { query: dbQuery }) {
     const KNOWN = ["auth", "categories", "courses", "bundles", "reviews", "applications", "stats"];
     if (!KNOWN.includes(resource)) return error("Not found", 404);
 
+    const ip = clientIp(req, context);
+    const presentedToken = (req.headers.get("authorization") || "").startsWith("Bearer ");
     const admin = isAuthorized(req);
+    if (presentedToken && !admin && rateLimited("auth", ip)) return error("Too many attempts — try again later", 429);
+    const isPublicWrite = req.method === "POST" && ["reviews", "applications"].includes(resource) && id === undefined;
+    if (isPublicWrite && !admin && rateLimited("write", ip)) return error("Too many submissions — try again later", 429);
     const isPublic =
-      (req.method === "GET" && ["categories", "courses", "bundles", "stats"].includes(resource)) ||
-      (req.method === "POST" && ["reviews", "applications"].includes(resource) && id === undefined);
+      (req.method === "GET" && ["categories", "courses", "bundles", "stats"].includes(resource)) || isPublicWrite;
     if (!isPublic && !admin) return error("Unauthorized", 401);
     if (req.method === "GET" && url.searchParams.get("all") === "1" && !admin) return error("Unauthorized", 401);
 
