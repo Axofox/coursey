@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Coursehub — Course editor</title>
+<script>(function(){try{if(localStorage.getItem('coursehub-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- SIGN IN (shown until the admin token is verified) -->
+<div class="signin-wrap" data-admin-login>
+  <form class="card signin-card" data-login-form>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="8" style="fill:var(--accent);"></rect><polygon points="11,9 20,14 11,19" style="fill:#fff;"></polygon></svg>
+      <span style="font-family:var(--font-display);font-weight:700;font-size:17px;">Coursehub</span>
+    </div>
+    <div>
+      <h1 style="font-size:20px;margin-bottom:4px;">Course editor</h1>
+      <p style="font-size:13px;color:var(--ink-soft);">Sign in with the admin token to create or edit courses.</p>
+    </div>
+    <div class="notice notice-error hide" data-login-error></div>
+    <div>
+      <label for="admin-token">Admin token</label>
+      <input id="admin-token" name="token" class="input" type="password" autocomplete="current-password" required>
+    </div>
+    <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+    <a href="index.html" class="navlink" style="text-align:center;">&larr; Back to marketplace</a>
+  </form>
+</div>
+
+<div class="hide" data-admin-app>
+
+<!-- TOP BAR -->
+<div style="position:sticky;top:0;z-index:50;background:var(--surface);border-bottom:1px solid var(--border);">
+  <div class="container container--narrow" style="height:76px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <a href="admin-dashboard.html?tab=courses" style="color:var(--ink-soft);display:flex;" aria-label="Back to courses">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </a>
+      <div>
+        <div style="font-size:12px;color:var(--ink-faint);">Platform admin</div>
+        <div style="font-size:15px;font-weight:600;" data-editor-title>Create a new course</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="iconbtn" aria-label="Toggle dark mode" data-theme-toggle>
+        <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      </button>
+      <button class="btn btn-secondary" data-save-draft>Save draft</button>
+    </div>
+  </div>
+</div>
+
+<main id="main" class="container container--narrow" style="padding-top:40px;padding-bottom:100px;">
+
+  <!-- STEPPER -->
+  <div style="display:flex;align-items:center;margin-bottom:40px;" class="stepper">
+    <button data-step-goto="1" style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+      <div class="step-dot" data-step-dot="1">1</div>
+      <span data-step-label="1" style="font-size:13px;font-weight:600;">Basics</span>
+    </button>
+    <div style="flex-grow:1;height:1px;background:var(--border);margin:0 14px;max-width:60px;"></div>
+    <button data-step-goto="2" style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+      <div class="step-dot" data-step-dot="2">2</div>
+      <span data-step-label="2" style="font-size:13px;font-weight:600;">Curriculum</span>
+    </button>
+    <div style="flex-grow:1;height:1px;background:var(--border);margin:0 14px;max-width:60px;"></div>
+    <button data-step-goto="3" style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+      <div class="step-dot" data-step-dot="3">3</div>
+      <span data-step-label="3" style="font-size:13px;font-weight:600;">Pricing</span>
+    </button>
+    <div style="flex-grow:1;height:1px;background:var(--border);margin:0 14px;max-width:60px;"></div>
+    <button data-step-goto="4" style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+      <div class="step-dot" data-step-dot="4">4</div>
+      <span data-step-label="4" style="font-size:13px;font-weight:600;">Publish</span>
+    </button>
+  </div>
+
+  <div class="notice notice-error hide" data-editor-error style="margin-bottom:20px;"></div>
+
+  <!-- STEP 1: BASICS -->
+  <div data-step-panel="1" class="card" style="padding:32px;display:flex;flex-direction:column;gap:20px;">
+    <h2 style="font-size:20px;margin-bottom:4px;">Course basics</h2>
+    <div>
+      <label for="cu-title">Course title</label>
+      <input id="cu-title" class="input" type="text" placeholder="e.g. Building Resilient APIs" data-field="title">
+    </div>
+    <div>
+      <label for="cu-subtitle">Subtitle</label>
+      <input id="cu-subtitle" class="input" type="text" placeholder="One sentence describing the outcome" data-field="subtitle">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="grid-2">
+      <div>
+        <label for="cu-category">Category</label>
+        <select id="cu-category" class="input" data-field="category_id"></select>
+      </div>
+      <div>
+        <label>Level</label>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="pill" data-pill-group="level" data-pill="Beginner" style="flex:1;">Beginner</button>
+          <button type="button" class="pill" data-pill-group="level" data-pill="Intermediate" style="flex:1;">Intermediate</button>
+          <button type="button" class="pill" data-pill-group="level" data-pill="Advanced" style="flex:1;">Advanced</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <label for="cu-desc">Description</label>
+      <textarea id="cu-desc" class="input" style="height:110px;padding:12px 14px;resize:vertical;" placeholder="What will students learn and build?" data-field="description"></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="grid-2">
+      <div>
+        <label for="cu-language">Language</label>
+        <input id="cu-language" class="input" type="text" value="English" data-field="language">
+      </div>
+      <div>
+        <label for="cu-badge">Badge</label>
+        <select id="cu-badge" class="input" data-field="badge">
+          <option value="">None</option>
+          <option value="Bestseller">Bestseller</option>
+          <option value="New">New</option>
+        </select>
+      </div>
+    </div>
+
+    <h3 style="font-size:16px;margin-top:8px;">Instructor</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="grid-2">
+      <div>
+        <label for="cu-instructor">Name</label>
+        <input id="cu-instructor" class="input" type="text" placeholder="e.g. Maya Chen" data-field="instructor_name">
+      </div>
+      <div>
+        <label for="cu-instructor-title">Title</label>
+        <input id="cu-instructor-title" class="input" type="text" placeholder="e.g. Product Designer at Figma" data-field="instructor_title">
+      </div>
+    </div>
+    <div>
+      <label for="cu-instructor-bio">Short bio</label>
+      <textarea id="cu-instructor-bio" class="input" style="height:80px;padding:12px 14px;resize:vertical;" placeholder="A sentence or two about the instructor" data-field="instructor_bio"></textarea>
+    </div>
+    <div>
+      <label>Course thumbnail</label>
+      <div style="border:1.5px dashed var(--border-strong);border-radius:12px;padding:20px;display:flex;align-items:center;gap:16px;">
+        <div class="thumb" style="width:88px;height:56px;" data-thumb-preview></div>
+        <div style="font-size:13px;color:var(--ink-faint);">The thumbnail uses the category colour for now. Image uploads are coming later.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: CURRICULUM -->
+  <div data-step-panel="2" class="card hide" style="padding:32px;display:flex;flex-direction:column;gap:28px;">
+    <div>
+      <h2 style="font-size:20px;margin-bottom:6px;">Curriculum</h2>
+      <p style="font-size:13px;color:var(--ink-soft);">Sections and lessons. Lesson length as minutes:seconds, e.g. <code>12:30</code>.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;" data-sections></div>
+    <button type="button" class="btn btn-secondary" style="align-self:flex-start;" data-add-section>+ Add section</button>
+
+    <div>
+      <h3 style="font-size:16px;margin-bottom:6px;">What you&rsquo;ll learn</h3>
+      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:12px;">One outcome per line.</p>
+      <div class="list-editor" data-list="learn"></div>
+      <button type="button" class="btn btn-secondary btn-sm" style="margin-top:10px;" data-add-item="learn">+ Add outcome</button>
+    </div>
+    <div>
+      <h3 style="font-size:16px;margin-bottom:6px;">Requirements</h3>
+      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:12px;">What learners need before they start.</p>
+      <div class="list-editor" data-list="requirements"></div>
+      <button type="button" class="btn btn-secondary btn-sm" style="margin-top:10px;" data-add-item="requirements">+ Add requirement</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: PRICING -->
+  <div data-step-panel="3" class="card hide" style="padding:32px;display:flex;flex-direction:column;gap:20px;">
+    <h2 style="font-size:20px;margin-bottom:4px;">Pricing</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="grid-2">
+      <div>
+        <label for="cu-price">Price (USD)</label>
+        <input id="cu-price" class="input" type="number" min="0" step="0.01" placeholder="49" data-field="price">
+      </div>
+      <div>
+        <label for="cu-original">Compare-at price (optional)</label>
+        <input id="cu-original" class="input" type="number" min="0" step="0.01" placeholder="89" data-field="original_price">
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--ink-soft);">A compare-at price shows crossed out next to the price with the discount percentage.</p>
+
+    <h3 style="font-size:16px;margin-top:8px;">Details shown on the course page</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="grid-2">
+      <div>
+        <label for="cu-resources">Downloadable resources</label>
+        <input id="cu-resources" class="input" type="number" min="0" step="1" value="0" data-field="resources">
+      </div>
+      <div>
+        <label for="cu-students">Students enrolled</label>
+        <input id="cu-students" class="input" type="number" min="0" step="1" value="0" data-field="students">
+      </div>
+      <div>
+        <label for="cu-rating">Rating (0–5)</label>
+        <input id="cu-rating" class="input" type="number" min="0" max="5" step="0.1" value="0" data-field="rating">
+      </div>
+      <div>
+        <label for="cu-rating-count">Number of ratings</label>
+        <input id="cu-rating-count" class="input" type="number" min="0" step="1" value="0" data-field="rating_count">
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--ink-soft);">Ratings show as &ldquo;No ratings yet&rdquo; while the count is 0. Real reviews arrive once learners have accounts.</p>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:var(--surface-alt);border-radius:12px;">
+      <div>
+        <div style="font-size:14px;font-weight:600;">Featured on the homepage</div>
+        <div style="font-size:12px;color:var(--ink-soft);margin-top:2px;">Show this course in the &ldquo;Featured courses&rdquo; grid</div>
+      </div>
+      <button type="button" class="switch" data-field="featured" aria-pressed="false" aria-label="Featured on the homepage"></button>
+    </div>
+  </div>
+
+  <!-- STEP 4: PUBLISH -->
+  <div data-step-panel="4" class="card hide" style="padding:32px;">
+    <h2 style="font-size:20px;margin-bottom:20px;">Ready to publish</h2>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:28px;" data-checklist></div>
+    <div style="background:var(--accent-tint);border-radius:12px;padding:18px 20px;margin-bottom:24px;">
+      <div style="font-size:13px;color:var(--accent-strong);line-height:1.6;">Publishing makes the course visible on the homepage and in search immediately. You can unpublish it any time from the admin console.</div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button type="button" class="btn btn-primary" data-publish>Publish course</button>
+      <button type="button" class="btn btn-secondary" data-save-draft>Save as draft</button>
+    </div>
+  </div>
+
+  <!-- NAV BUTTONS -->
+  <div style="display:flex;justify-content:space-between;margin-top:24px;">
+    <button type="button" class="btn btn-secondary hide" data-step-back>Back</button>
+    <span></span>
+    <button type="button" class="btn btn-primary" data-step-next>Continue</button>
+  </div>
+</main>
+
+</div>
+
+<style>
+  @media (max-width:640px){
+    .stepper span[data-step-label]{ display:none; }
+    .grid-2{ grid-template-columns:1fr !important; }
+  }
+</style>
+<script src="assets/api.js"></script>
+<script src="assets/script.js"></script>
+<script src="assets/editor.js"></script>
+</body>
+</html>

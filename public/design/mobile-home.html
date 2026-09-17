@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coursehub — Mobile Home</title>
+<script>(function(){try{if(localStorage.getItem('coursehub-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/styles.css">
+<style>
+  body{ max-width:480px; margin:0 auto; }
+  .mobile-input{ height:48px; border-radius:999px; border:none; padding:0 14px; font-size:14px; width:100%; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div style="width:100%;min-height:100vh;display:flex;flex-direction:column;">
+
+  <!-- HEADER -->
+  <div style="padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div style="font-size:13px;color:var(--ink-soft);">Hello,</div>
+      <div style="font-size:20px;font-weight:700;font-family:var(--font-display);">Alex</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="iconbtn" aria-label="Toggle dark mode" data-theme-toggle style="width:38px;height:38px;">
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      </button>
+      <a href="dashboard.html" aria-label="My profile" style="width:38px;height:38px;border-radius:999px;background:var(--accent-tint);color:var(--accent-strong);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;position:relative;">
+        AR
+        <span aria-hidden="true" style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;border-radius:999px;background:#2FAE82;border:2px solid var(--bg);"></span>
+      </a>
+    </div>
+  </div>
+
+  <!-- SEARCH CARD -->
+  <div style="padding:20px;">
+    <div style="background:#2FAE82;border-radius:22px;padding:22px;">
+      <div style="color:#fff;font-family:var(--font-display);font-size:17px;font-weight:600;line-height:1.3;margin-bottom:14px;">Find a course<br>you want to learn</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div style="position:relative;flex-grow:1;">
+          <div style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink-faint);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+          <label class="visually-hidden" for="mh-search">Search course</label>
+          <input id="mh-search" class="mobile-input" type="text" placeholder="Search course" style="padding-left:38px;">
+        </div>
+        <button style="width:40px;height:40px;border-radius:999px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;" aria-label="Filters">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"></line><circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"></circle><line x1="4" y1="12" x2="20" y2="12"></line><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"></circle><line x1="4" y1="18" x2="20" y2="18"></line><circle cx="11" cy="18" r="2" fill="currentColor" stroke="none"></circle></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <main id="main">
+    <!-- CATEGORIES -->
+    <div style="padding:0 20px 18px;">
+      <div style="font-size:15px;font-weight:700;font-family:var(--font-display);margin-bottom:12px;">Categories</div>
+      <div style="display:flex;gap:8px;overflow-x:auto;">
+        <button class="pill pill-accent active" data-pill-group="mhcat" data-pill="coding">Coding</button>
+        <button class="pill pill-accent" data-pill-group="mhcat" data-pill="design">Design</button>
+        <button class="pill pill-accent" data-pill-group="mhcat" data-pill="development">Development</button>
+        <button class="pill pill-accent" data-pill-group="mhcat" data-pill="marketing">Marketing</button>
+      </div>
+    </div>
+
+    <!-- POPULAR COURSES -->
+    <div style="padding:0 20px 100px;flex-grow:1;">
+      <div style="font-size:15px;font-weight:700;font-family:var(--font-display);margin-bottom:12px;">Popular Courses</div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <a href="course-detail.html" style="background:var(--surface);border-radius:18px;overflow:hidden;display:flex;border:1px solid var(--border);">
+          <div style="width:104px;flex-shrink:0;position:relative;background:#FDEEDC;color:#C98A3E;display:flex;align-items:center;justify-content:center;">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            <button data-wishlist-toggle aria-label="Save to wishlist" style="position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:999px;background:rgba(255,255,255,0.85);color:#D64545;display:flex;align-items:center;justify-content:center;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path></svg>
+            </button>
+          </div>
+          <div style="padding:14px;flex-grow:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px;line-height:1.3;">Road to JavaScript Expert</div>
+            <div style="font-size:11px;color:var(--ink-soft);margin-bottom:10px;">Author by Samuel</div>
+            <div style="display:flex;gap:12px;">
+              <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-faint);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>50 Minute</div>
+              <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-faint);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>24 User</div>
+            </div>
+          </div>
+        </a>
+        <a href="course-detail.html" style="background:var(--surface);border-radius:18px;overflow:hidden;display:flex;border:1px solid var(--border);">
+          <div style="width:104px;flex-shrink:0;position:relative;background:#E4F3EA;color:#3E9C6B;display:flex;align-items:center;justify-content:center;">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            <button data-wishlist-toggle aria-label="Save to wishlist" style="position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:999px;background:rgba(255,255,255,0.85);color:#D64545;display:flex;align-items:center;justify-content:center;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path></svg>
+            </button>
+          </div>
+          <div style="padding:14px;flex-grow:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px;line-height:1.3;">Expert Math In 20 Minutes</div>
+            <div style="font-size:11px;color:var(--ink-soft);margin-bottom:10px;">Author by Jennifer</div>
+            <div style="display:flex;gap:12px;">
+              <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-faint);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>50 Minute</div>
+              <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-faint);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>18 User</div>
+            </div>
+          </div>
+        </a>
+        <a href="course-detail.html" style="background:var(--surface);border-radius:18px;overflow:hidden;display:flex;border:1px solid var(--border);">
+          <div style="width:104px;flex-shrink:0;position:relative;background:#EDEBFB;color:#7A6DF0;display:flex;align-items:center;justify-content:center;">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            <button data-wishlist-toggle aria-label="Save to wishlist" style="position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:999px;background:rgba(255,255,255,0.85);color:#D64545;display:flex;align-items:center;justify-content:center;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path></svg>
+            </button>
+          </div>
+          <div style="padding:14px;flex-grow:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px;line-height:1.3;">Learn Swift by Doing</div>
+            <div style="font-size:11px;color:var(--ink-soft);margin-bottom:10px;">Author by Samuel</div>
+            <div style="display:flex;gap:12px;">
+              <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-faint);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>35 Minute</div>
+              <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-faint);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>30 User</div>
+            </div>
+          </div>
+        </a>
+        <a href="course-detail.html" style="background:var(--surface);border-radius:18px;overflow:hidden;display:flex;border:1px solid var(--border);">
+          <div style="width:104px;flex-shrink:0;position:relative;background:#E3F1FB;color:#3E93C9;display:flex;align-items:center;justify-content:center;">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            <button data-wishlist-toggle aria-label="Save to wishlist" style="position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:999px;background:rgba(255,255,255,0.85);color:#D64545;display:flex;align-items:center;justify-content:center;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path></svg>
+            </button>
+          </div>
+          <div style="padding:14px;flex-grow:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px;line-height:1.3;">Learn SEO Expert</div>
+            <div style="font-size:11px;color:var(--ink-soft);margin-bottom:10px;">Author by Samuel</div>
+            <div style="display:flex;gap:12px;">
+              <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-faint);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>28 Minute</div>
+              <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-faint);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>42 User</div>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- BOTTOM TAB BAR -->
+  <nav style="position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 12px 18px;display:flex;" aria-label="Mobile navigation">
+    <div class="tabitem active"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>Explore</div>
+    <a href="mobile-courses.html" class="tabitem"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"></circle><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"></polygon></svg>Courses</a>
+    <a href="cart.html" class="tabitem"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>Cart</a>
+    <a href="dashboard.html" class="tabitem"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Profile</a>
+  </nav>
+</div>
+
+<script src="../assets/script.js"></script>
+</body>
+</html>

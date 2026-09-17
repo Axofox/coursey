@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coursehub — Learner Dashboard</title>
+<script>(function(){try{if(localStorage.getItem('coursehub-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="notice" style="border-radius:0;text-align:center;">Preview — learner accounts aren’t available yet, so this dashboard shows sample data.</div>
+
+<div style="display:flex;" class="dash-shell">
+
+  <!-- SIDEBAR -->
+  <div style="width:248px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);min-height:100vh;padding:24px 16px;display:flex;flex-direction:column;position:sticky;top:0;align-self:flex-start;" class="dash-sidebar">
+    <a href="index.html" style="display:flex;align-items:center;gap:10px;padding:0 8px;margin-bottom:28px;">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="8" style="fill:var(--accent);"></rect><polygon points="11,9 20,14 11,19" style="fill:#fff;"></polygon></svg>
+      <span style="font-family:var(--font-display);font-weight:700;font-size:17px;">Coursehub</span>
+    </a>
+    <nav style="display:flex;flex-direction:column;gap:2px;" aria-label="Dashboard sections">
+      <button class="navitem active" data-tab-group="dashboard" data-tab="overview" data-tab-title="Overview">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        Overview
+      </button>
+      <button class="navitem" data-tab-group="dashboard" data-tab="courses" data-tab-title="My Courses">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        My Courses
+      </button>
+      <button class="navitem" data-tab-group="dashboard" data-tab="awards" data-tab-title="Certificates &amp; Awards">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg>
+        Certificates &amp; Awards
+      </button>
+      <button class="navitem" data-tab-group="dashboard" data-tab="wishlist" data-tab-title="Wishlist">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path></svg>
+        Wishlist
+      </button>
+      <button class="navitem" data-tab-group="dashboard" data-tab="history" data-tab-title="Purchase History">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        Purchase History
+      </button>
+      <button class="navitem" data-tab-group="dashboard" data-tab="settings" data-tab-title="Settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        Settings
+      </button>
+    </nav>
+    <div style="flex-grow:1;"></div>
+    <a href="index.html" class="navitem" style="margin-bottom:8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      Browse courses
+    </a>
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-top:1px solid var(--border);margin-top:6px;padding-top:16px;">
+      <div style="width:36px;height:36px;border-radius:999px;background:var(--accent-tint);color:var(--accent-strong);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">AR</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;">Alex Rivera</div>
+        <div style="font-size:12px;color:var(--ink-faint);">Learner</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div style="flex-grow:1;min-width:0;">
+    <div style="height:76px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 40px;background:var(--surface);">
+      <h1 id="dash-title" style="font-size:19px;">Overview</h1>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="iconbtn" aria-label="Toggle dark mode" data-theme-toggle>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <a href="cart.html" class="iconbtn" aria-label="Cart">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        </a>
+      </div>
+    </div>
+
+    <main id="main" style="padding:36px 40px;max-width:1100px;">
+
+      <!-- OVERVIEW -->
+      <div data-tab-group="dashboard" data-tab-panel="overview">
+        <p style="font-size:15px;color:var(--ink-soft);margin-bottom:28px;">Welcome back, Alex. Here&rsquo;s where you left off.</p>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:36px;" class="grid-4">
+          <div class="card" style="padding:20px;"><div style="font-size:26px;font-weight:700;font-family:var(--font-display);">3</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">In progress</div></div>
+          <div class="card" style="padding:20px;"><div style="font-size:26px;font-weight:700;font-family:var(--font-display);">7</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Completed</div></div>
+          <div class="card" style="padding:20px;"><div style="font-size:26px;font-weight:700;font-family:var(--font-display);">5</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Certificates earned</div></div>
+          <div class="card" style="padding:20px;"><div style="font-size:26px;font-weight:700;font-family:var(--font-display);">12</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Day streak</div></div>
+        </div>
+
+        <h3 style="font-size:16px;margin-bottom:16px;">Continue learning</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:36px;" class="grid-3">
+          <div class="card" style="overflow:hidden;">
+            <a href="course-detail.html" style="aspect-ratio:16/9;display:block;background:#EDEBFB;"></a>
+            <div style="padding:16px;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:8px;line-height:1.3;">UX Foundations: Research to Wireframe</div>
+              <div class="progress-track" style="margin-bottom:6px;"><div class="progress-fill" style="width:68%;"></div></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+                <span style="font-size:12px;color:var(--ink-faint);">68% complete</span>
+                <a href="course-detail.html" class="btn btn-primary" style="height:32px;padding:0 12px;font-size:12px;">Resume</a>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="overflow:hidden;">
+            <a href="course-detail.html" style="aspect-ratio:16/9;display:block;background:#E3F1FB;"></a>
+            <div style="padding:16px;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:8px;line-height:1.3;">Python for Data Analysis</div>
+              <div class="progress-track" style="margin-bottom:6px;"><div class="progress-fill" style="width:32%;"></div></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+                <span style="font-size:12px;color:var(--ink-faint);">32% complete</span>
+                <a href="course-detail.html" class="btn btn-primary" style="height:32px;padding:0 12px;font-size:12px;">Resume</a>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="overflow:hidden;">
+            <a href="course-detail.html" style="aspect-ratio:16/9;display:block;background:#E4F3EA;"></a>
+            <div style="padding:16px;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:8px;line-height:1.3;">The Complete SQL Bootcamp</div>
+              <div class="progress-track" style="margin-bottom:6px;"><div class="progress-fill" style="width:91%;"></div></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+                <span style="font-size:12px;color:var(--ink-faint);">91% complete</span>
+                <a href="course-detail.html" class="btn btn-primary" style="height:32px;padding:0 12px;font-size:12px;">Resume</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MY COURSES -->
+      <div data-tab-group="dashboard" data-tab-panel="courses" class="hide">
+        <div style="display:flex;gap:8px;margin-bottom:22px;">
+          <button class="pill active" data-course-filter="All">All</button>
+          <button class="pill" data-course-filter="In progress">In progress</button>
+          <button class="pill" data-course-filter="Completed">Completed</button>
+          <button class="pill" data-course-filter="Not started">Not started</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;" data-course-list>
+          <div class="card" data-course-row data-status="In progress" style="padding:14px;display:flex;align-items:center;gap:16px;">
+            <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#EDEBFB;"></a>
+            <div style="flex-grow:1;min-width:0;">
+              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">UX Foundations: Research to Wireframe</div>
+              <div style="font-size:12px;color:var(--ink-soft);margin-bottom:8px;">Maya Chen</div>
+              <div class="progress-track" style="max-width:220px;"><div class="progress-fill" style="width:68%;"></div></div>
+            </div>
+            <span class="badge badge-accent">In progress</span>
+            <a href="course-detail.html" class="btn btn-secondary" style="height:36px;">Continue</a>
+          </div>
+          <div class="card" data-course-row data-status="In progress" style="padding:14px;display:flex;align-items:center;gap:16px;">
+            <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#E3F1FB;"></a>
+            <div style="flex-grow:1;min-width:0;">
+              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Python for Data Analysis</div>
+              <div style="font-size:12px;color:var(--ink-soft);margin-bottom:8px;">Daniel Ortiz</div>
+              <div class="progress-track" style="max-width:220px;"><div class="progress-fill" style="width:32%;"></div></div>
+            </div>
+            <span class="badge badge-accent">In progress</span>
+            <a href="course-detail.html" class="btn btn-secondary" style="height:36px;">Continue</a>
+          </div>
+          <div class="card" data-course-row data-status="Completed" style="padding:14px;display:flex;align-items:center;gap:16px;">
+            <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#E4F3EA;"></a>
+            <div style="flex-grow:1;min-width:0;">
+              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">The Complete SQL Bootcamp</div>
+              <div style="font-size:12px;color:var(--ink-soft);margin-bottom:8px;">Priya Nair</div>
+              <div class="progress-track" style="max-width:220px;"><div class="progress-fill" style="width:100%;"></div></div>
+            </div>
+            <span class="badge badge-success">Completed</span>
+            <a href="course-detail.html" class="btn btn-secondary" style="height:36px;">Review</a>
+          </div>
+          <div class="card" data-course-row data-status="Completed" style="padding:14px;display:flex;align-items:center;gap:16px;">
+            <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#FBE7EC;"></a>
+            <div style="flex-grow:1;min-width:0;">
+              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Brand Strategy &amp; Positioning</div>
+              <div style="font-size:12px;color:var(--ink-soft);margin-bottom:8px;">Owen Fisk</div>
+              <div class="progress-track" style="max-width:220px;"><div class="progress-fill" style="width:100%;"></div></div>
+            </div>
+            <span class="badge badge-success">Completed</span>
+            <a href="course-detail.html" class="btn btn-secondary" style="height:36px;">Review</a>
+          </div>
+          <div class="card" data-course-row data-status="Not started" style="padding:14px;display:flex;align-items:center;gap:16px;">
+            <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#FFF6DD;"></a>
+            <div style="flex-grow:1;min-width:0;">
+              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Advanced Excel for Finance</div>
+              <div style="font-size:12px;color:var(--ink-soft);margin-bottom:8px;">Tom Reilly</div>
+              <div class="progress-track" style="max-width:220px;"><div class="progress-fill" style="width:0%;"></div></div>
+            </div>
+            <span class="badge badge-neutral">Not started</span>
+            <a href="course-detail.html" class="btn btn-secondary" style="height:36px;">Start</a>
+          </div>
+          <div class="card" data-course-row data-status="Not started" style="padding:14px;display:flex;align-items:center;gap:16px;">
+            <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#E3F1FB;"></a>
+            <div style="flex-grow:1;min-width:0;">
+              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Intro to Machine Learning</div>
+              <div style="font-size:12px;color:var(--ink-soft);margin-bottom:8px;">Daniel Ortiz</div>
+              <div class="progress-track" style="max-width:220px;"><div class="progress-fill" style="width:0%;"></div></div>
+            </div>
+            <span class="badge badge-neutral">Not started</span>
+            <a href="course-detail.html" class="btn btn-secondary" style="height:36px;">Start</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- CERTIFICATES & AWARDS -->
+      <div data-tab-group="dashboard" data-tab-panel="awards" class="hide">
+        <h3 style="font-size:16px;margin-bottom:16px;">Certificates</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:40px;" class="grid-3">
+          <div class="card" style="padding:22px;">
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--amber-tint);color:var(--amber);display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px;">The Complete SQL Bootcamp</div>
+            <div style="font-size:12px;color:var(--ink-faint);margin-bottom:14px;">Completed Aug 14, 2026</div>
+            <button class="btn btn-secondary btn-block" style="height:36px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Download
+            </button>
+          </div>
+          <div class="card" style="padding:22px;">
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--amber-tint);color:var(--amber);display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Brand Strategy &amp; Positioning</div>
+            <div style="font-size:12px;color:var(--ink-faint);margin-bottom:14px;">Completed Jul 2, 2026</div>
+            <button class="btn btn-secondary btn-block" style="height:36px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Download
+            </button>
+          </div>
+          <div class="card" style="padding:22px;">
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--amber-tint);color:var(--amber);display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Intro to Wireframing</div>
+            <div style="font-size:12px;color:var(--ink-faint);margin-bottom:14px;">Completed May 20, 2026</div>
+            <button class="btn btn-secondary btn-block" style="height:36px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Download
+            </button>
+          </div>
+        </div>
+
+        <h3 style="font-size:16px;margin-bottom:16px;">Achievements</h3>
+        <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px;" class="grid-6">
+          <div style="text-align:center;"><div style="width:64px;height:64px;border-radius:999px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:#FCF1DE;color:#B7791F;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div><div style="font-size:12px;font-weight:600;line-height:1.3;">First Course</div></div>
+          <div style="text-align:center;"><div style="width:64px;height:64px;border-radius:999px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:#FCF1DE;color:#B7791F;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div><div style="font-size:12px;font-weight:600;line-height:1.3;">7-Day Streak</div></div>
+          <div style="text-align:center;"><div style="width:64px;height:64px;border-radius:999px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:#FCF1DE;color:#B7791F;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div><div style="font-size:12px;font-weight:600;line-height:1.3;">5 Completed</div></div>
+          <div style="text-align:center;"><div style="width:64px;height:64px;border-radius:999px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:#FCF1DE;color:#B7791F;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div><div style="font-size:12px;font-weight:600;line-height:1.3;">Top Reviewer</div></div>
+          <div style="text-align:center;opacity:0.4;"><div style="width:64px;height:64px;border-radius:999px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:#F3F2EF;color:#8B8B92;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div><div style="font-size:12px;font-weight:600;line-height:1.3;">30-Day Streak</div></div>
+          <div style="text-align:center;opacity:0.4;"><div style="width:64px;height:64px;border-radius:999px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:#F3F2EF;color:#8B8B92;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div><div style="font-size:12px;font-weight:600;line-height:1.3;">Early Adopter</div></div>
+        </div>
+      </div>
+
+      <!-- WISHLIST -->
+      <div data-tab-group="dashboard" data-tab-panel="wishlist" class="hide" style="display:flex;flex-direction:column;gap:12px;">
+        <div class="card" data-wishlist-row style="padding:14px;display:flex;align-items:center;gap:16px;">
+          <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#EDEBFB;"></a>
+          <div style="flex-grow:1;">
+            <div style="font-size:14px;font-weight:600;margin-bottom:3px;">Figma to Front-End Handoff</div>
+            <div style="font-size:12px;color:var(--ink-soft);">Maya Chen</div>
+          </div>
+          <div style="font-size:15px;font-weight:700;">$54</div>
+          <a href="cart.html" class="btn btn-primary" style="height:36px;">Move to cart</a>
+          <button data-remove-row aria-label="Remove" style="color:var(--ink-faint);padding:6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <div class="card" data-wishlist-row style="padding:14px;display:flex;align-items:center;gap:16px;">
+          <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#FBE7EC;"></a>
+          <div style="flex-grow:1;">
+            <div style="font-size:14px;font-weight:600;margin-bottom:3px;">Advanced SEO Strategy</div>
+            <div style="font-size:12px;color:var(--ink-soft);">Nina Torres</div>
+          </div>
+          <div style="font-size:15px;font-weight:700;">$44</div>
+          <a href="cart.html" class="btn btn-primary" style="height:36px;">Move to cart</a>
+          <button data-remove-row aria-label="Remove" style="color:var(--ink-faint);padding:6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <div class="card hide" data-wishlist-empty style="padding:40px;text-align:center;color:var(--ink-faint);font-size:14px;">Your wishlist is empty.</div>
+      </div>
+
+      <!-- PURCHASE HISTORY -->
+      <div data-tab-group="dashboard" data-tab-panel="history" class="hide card" style="overflow:hidden;">
+        <div style="display:grid;grid-template-columns:110px 1fr 90px 100px 90px;padding:14px 20px;font-size:12px;font-weight:600;color:var(--ink-faint);text-transform:uppercase;letter-spacing:0.03em;border-bottom:1px solid var(--border);" class="history-row">
+          <span>Date</span><span>Item</span><span>Amount</span><span>Status</span><span>Receipt</span>
+        </div>
+        <div style="display:grid;grid-template-columns:110px 1fr 90px 100px 90px;padding:16px 20px;font-size:13px;border-bottom:1px solid var(--border);align-items:center;" class="history-row">
+          <span style="color:var(--ink-soft);">Aug 14, 2026</span><span style="font-weight:500;">The Complete SQL Bootcamp</span><span>$44</span><span class="badge badge-success" style="width:fit-content;">Paid</span><a href="#" style="color:var(--accent-strong);font-weight:600;">View</a>
+        </div>
+        <div style="display:grid;grid-template-columns:110px 1fr 90px 100px 90px;padding:16px 20px;font-size:13px;border-bottom:1px solid var(--border);align-items:center;" class="history-row">
+          <span style="color:var(--ink-soft);">Jul 2, 2026</span><span style="font-weight:500;">Brand Strategy &amp; Positioning</span><span>$59</span><span class="badge badge-success" style="width:fit-content;">Paid</span><a href="#" style="color:var(--accent-strong);font-weight:600;">View</a>
+        </div>
+        <div style="display:grid;grid-template-columns:110px 1fr 90px 100px 90px;padding:16px 20px;font-size:13px;border-bottom:1px solid var(--border);align-items:center;" class="history-row">
+          <span style="color:var(--ink-soft);">Jun 18, 2026</span><span style="font-weight:500;">Product Design Career Path (bundle)</span><span>$179</span><span class="badge badge-success" style="width:fit-content;">Paid</span><a href="#" style="color:var(--accent-strong);font-weight:600;">View</a>
+        </div>
+        <div style="display:grid;grid-template-columns:110px 1fr 90px 100px 90px;padding:16px 20px;font-size:13px;border-bottom:1px solid var(--border);align-items:center;" class="history-row">
+          <span style="color:var(--ink-soft);">May 20, 2026</span><span style="font-weight:500;">Intro to Wireframing</span><span>$39</span><span class="badge badge-success" style="width:fit-content;">Paid</span><a href="#" style="color:var(--accent-strong);font-weight:600;">View</a>
+        </div>
+        <div style="display:grid;grid-template-columns:110px 1fr 90px 100px 90px;padding:16px 20px;font-size:13px;align-items:center;" class="history-row">
+          <span style="color:var(--ink-soft);">Apr 3, 2026</span><span style="font-weight:500;">Advanced Excel for Finance</span><span>$39</span><span class="badge badge-success" style="width:fit-content;">Paid</span><a href="#" style="color:var(--accent-strong);font-weight:600;">View</a>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div data-tab-group="dashboard" data-tab-panel="settings" class="hide card" style="padding:28px;max-width:480px;display:flex;flex-direction:column;gap:18px;">
+        <div>
+          <label for="set-name">Full name</label>
+          <input id="set-name" class="input" type="text" value="Alex Rivera">
+        </div>
+        <div>
+          <label for="set-email">Email</label>
+          <input id="set-email" class="input" type="email" value="alex.rivera@example.com">
+        </div>
+        <div>
+          <label>Password</label>
+          <button class="btn btn-secondary">Change password</button>
+        </div>
+        <div style="display:flex;justify-content:flex-end;border-top:1px solid var(--border);padding-top:18px;margin-top:4px;">
+          <button class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<style>
+  @media (max-width:900px){
+    .dash-shell{ flex-direction:column; }
+    .dash-sidebar{ width:100%; min-height:auto; position:static; border-right:none; border-bottom:1px solid var(--border); }
+    .grid-4{ grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+    .grid-3{ grid-template-columns:1fr !important; }
+    .grid-6{ grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
+    .history-row{ grid-template-columns:1fr !important; gap:4px; }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    /* Sidebar tabs also update the page title and active state */
+    var navButtons = document.querySelectorAll('[data-tab-group="dashboard"][data-tab]');
+    var titleEl = document.getElementById('dash-title');
+    navButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (titleEl) titleEl.textContent = btn.getAttribute('data-tab-title');
+      });
+    });
+
+    /* My Courses status filter */
+    var filterBtns = document.querySelectorAll('[data-course-filter]');
+    filterBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        filterBtns.forEach(function (b) { b.classList.toggle('active', b === btn); });
+        var status = btn.getAttribute('data-course-filter');
+        document.querySelectorAll('[data-course-row]').forEach(function (row) {
+          var show = status === 'All' || row.getAttribute('data-status') === status;
+          row.classList.toggle('hide', !show);
+        });
+      });
+    });
+
+    /* Wishlist remove */
+    var wishlistList = document.querySelectorAll('[data-wishlist-row]');
+    document.querySelectorAll('[data-wishlist-row] [data-remove-row]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var row = btn.closest('[data-wishlist-row]');
+        if (row) row.remove();
+        var remaining = document.querySelectorAll('[data-wishlist-row]');
+        var empty = document.querySelector('[data-wishlist-empty]');
+        if (empty) empty.classList.toggle('hide', remaining.length > 0);
+      });
+    });
+  });
+</script>
+<script src="assets/api.js"></script>
+<script src="assets/script.js"></script>
+</body>
+</html>

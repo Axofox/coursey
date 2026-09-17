@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coursehub — Design System</title>
+<script>(function(){try{if(localStorage.getItem('coursehub-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<main id="main" class="container container--ds ds-header" style="padding-top:56px;padding-bottom:24px;display:flex;justify-content:space-between;align-items:flex-start;gap:24px;">
+  <div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <svg width="34" height="34" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="8" style="fill:var(--accent);"></rect><polygon points="11,9 20,14 11,19" style="fill:#fff;"></polygon></svg>
+      <h1 style="font-size:30px;">Coursehub Design System</h1>
+    </div>
+    <p style="font-size:15px;color:var(--ink-soft);max-width:640px;line-height:1.6;">Tokens and components shared across the marketplace, the instructor studio and the platform admin console. This page is the living reference for the tokens defined in <code>assets/styles.css</code>.</p>
+  </div>
+  <button class="iconbtn" aria-label="Toggle dark mode" data-theme-toggle style="width:44px;height:44px;border:1px solid var(--border-strong);flex-shrink:0;">
+    <svg class="icon-moon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    <svg class="icon-sun" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+  </button>
+</main>
+
+<div class="container container--ds">
+
+  <!-- COLORS -->
+  <div class="section">
+    <h2>Color</h2>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px;" class="grid-4">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:12px;">Neutrals</div>
+        <div class="swatch" style="background:var(--bg);"></div><div style="font-size:12px;margin-bottom:14px;">Background (cream) · #FDF6EC</div>
+        <div class="swatch" style="background:var(--surface);"></div><div style="font-size:12px;margin-bottom:14px;">Surface · #FFFFFF</div>
+        <div class="swatch" style="background:var(--ink);"></div><div style="font-size:12px;">Ink · #17171A</div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:12px;">Text</div>
+        <div class="swatch" style="background:var(--ink-soft);"></div><div style="font-size:12px;margin-bottom:14px;">Ink soft · #55555C</div>
+        <div class="swatch" style="background:var(--ink-faint);"></div><div style="font-size:12px;margin-bottom:14px;">Ink faint · #8B8B92</div>
+        <div class="swatch" style="background:var(--border-strong);"></div><div style="font-size:12px;">Border strong (warm) · #DFCFAF</div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:12px;">Accent</div>
+        <div class="swatch" style="background:var(--accent);"></div><div style="font-size:12px;margin-bottom:14px;">Coral (default) · #FF6B47</div>
+        <div class="swatch" style="background:#2FAE82;"></div><div style="font-size:12px;margin-bottom:14px;">Mint (alt tweak) · #2FAE82</div>
+        <div class="swatch" style="background:var(--accent-tint);"></div><div style="font-size:12px;">Accent tint · #FFE6DC</div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:12px;">Semantic</div>
+        <div class="swatch" style="background:var(--success);"></div><div style="font-size:12px;margin-bottom:14px;">Success · #1F8A4C</div>
+        <div class="swatch" style="background:var(--amber);"></div><div style="font-size:12px;margin-bottom:14px;">Amber · #B7791F</div>
+        <div class="swatch" style="background:var(--danger);"></div><div style="font-size:12px;">Danger · #C4432E</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DARK MODE -->
+  <div class="section">
+    <h2>Dark mode</h2>
+    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:18px;max-width:600px;line-height:1.6;">Every screen has a sun/moon toggle in its header (<code>[data-theme-toggle]</code>), which flips <code>&lt;html data-theme="dark"&gt;</code> and persists the choice to <code>localStorage</code>. Core surface, border and text tokens swap; the coral accent and course-card tints stay vivid in both themes.</p>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;" class="grid-4">
+      <div style="border-radius:14px;overflow:hidden;border:1px solid var(--border);">
+        <div style="background:#1E1712;height:72px;"></div>
+        <div style="padding:10px 12px;font-size:12px;background:var(--surface);">Background · #1E1712</div>
+      </div>
+      <div style="border-radius:14px;overflow:hidden;border:1px solid var(--border);">
+        <div style="background:#2A2119;height:72px;"></div>
+        <div style="padding:10px 12px;font-size:12px;background:var(--surface);">Surface · #2A2119</div>
+      </div>
+      <div style="border-radius:14px;overflow:hidden;border:1px solid var(--border);">
+        <div style="background:#FBF3E8;height:72px;"></div>
+        <div style="padding:10px 12px;font-size:12px;background:var(--surface);">Ink (text) · #FBF3E8</div>
+      </div>
+      <div style="border-radius:14px;overflow:hidden;border:1px solid var(--border);">
+        <div style="background:#FFA98A;height:72px;"></div>
+        <div style="padding:10px 12px;font-size:12px;background:var(--surface);">Accent strong (dark) · #FFA98A</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TYPOGRAPHY -->
+  <div class="section">
+    <h2>Typography</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;" class="grid-2">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:16px;">Display &mdash; Space Grotesk</div>
+        <div style="font-family:var(--font-display);font-size:44px;font-weight:700;margin-bottom:10px;">Aa Learn something new</div>
+        <div style="font-family:var(--font-display);font-size:26px;font-weight:600;margin-bottom:10px;">H2 Section heading 26/600</div>
+        <div style="font-family:var(--font-display);font-size:18px;font-weight:600;">H3 Card title 18/600</div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:16px;">Body &mdash; IBM Plex Sans</div>
+        <div style="font-size:16px;margin-bottom:10px;">Body large 16/400 &mdash; used for descriptions and long-form copy.</div>
+        <div style="font-size:14px;margin-bottom:10px;">Body 14/400 &mdash; the default UI text size.</div>
+        <div style="font-size:12px;color:var(--ink-faint);">Caption 12/500 &mdash; metadata, timestamps, helper text.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPACING -->
+  <div class="section">
+    <h2>Spacing scale</h2>
+    <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;">
+      <div style="text-align:center;"><div style="width:4px;height:4px;background:var(--accent);margin:0 auto 8px;"></div><span style="font-size:11px;color:var(--ink-faint);">4</span></div>
+      <div style="text-align:center;"><div style="width:8px;height:8px;background:var(--accent);margin:0 auto 8px;"></div><span style="font-size:11px;color:var(--ink-faint);">8</span></div>
+      <div style="text-align:center;"><div style="width:12px;height:12px;background:var(--accent);margin:0 auto 8px;"></div><span style="font-size:11px;color:var(--ink-faint);">12</span></div>
+      <div style="text-align:center;"><div style="width:16px;height:16px;background:var(--accent);margin:0 auto 8px;"></div><span style="font-size:11px;color:var(--ink-faint);">16</span></div>
+      <div style="text-align:center;"><div style="width:24px;height:24px;background:var(--accent);margin:0 auto 8px;"></div><span style="font-size:11px;color:var(--ink-faint);">24</span></div>
+      <div style="text-align:center;"><div style="width:32px;height:32px;background:var(--accent);margin:0 auto 8px;"></div><span style="font-size:11px;color:var(--ink-faint);">32</span></div>
+      <div style="text-align:center;"><div style="width:48px;height:48px;background:var(--accent);margin:0 auto 8px;"></div><span style="font-size:11px;color:var(--ink-faint);">48</span></div>
+      <div style="text-align:center;"><div style="width:64px;height:64px;background:var(--accent);margin:0 auto 8px;"></div><span style="font-size:11px;color:var(--ink-faint);">64</span></div>
+      <div style="text-align:center;"><div style="width:96px;height:96px;background:var(--accent);margin:0 auto 8px;"></div><span style="font-size:11px;color:var(--ink-faint);">96</span></div>
+    </div>
+  </div>
+
+  <!-- BUTTONS -->
+  <div class="section">
+    <h2>Buttons</h2>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <button class="btn btn-primary">Primary action</button>
+      <button class="btn btn-secondary">Secondary</button>
+      <button class="btn btn-ghost">Ghost</button>
+    </div>
+  </div>
+
+  <!-- FORM ELEMENTS -->
+  <div class="section">
+    <h2>Form elements</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;max-width:760px;" class="grid-3">
+      <div><label for="ds-text">Text input</label><input id="ds-text" class="input" type="text" placeholder="Placeholder text"></div>
+      <div><label for="ds-select">Select</label><select id="ds-select" class="input"><option>Development</option></select></div>
+      <div><label>Segmented</label>
+        <div style="display:flex;gap:8px;">
+          <button style="flex:1;height:44px;border-radius:8px;background:var(--ink);color:#fff;font-size:13px;font-weight:600;">On</button>
+          <button style="flex:1;height:44px;border-radius:8px;border:1px solid var(--border-strong);font-size:13px;font-weight:600;color:var(--ink-soft);">Off</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BADGES -->
+  <div class="section">
+    <h2>Status &amp; badges</h2>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <span class="badge badge-success">Published</span>
+      <span class="badge badge-neutral">Draft</span>
+      <span class="badge badge-amber">Pending review</span>
+      <span class="badge badge-danger">Rejected</span>
+      <span class="badge badge-amber">Bestseller</span>
+      <span class="badge badge-success">New</span>
+      <span class="badge" style="background:#EEECFF;color:#3A2EDB;">In progress</span>
+    </div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="section">
+    <h2>Cards</h2>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;">
+      <div class="card" style="width:260px;overflow:hidden;">
+        <div style="aspect-ratio:16/9;background:#EDEBFB;display:flex;align-items:center;justify-content:center;color:#7A6DF0;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        </div>
+        <div style="padding:16px;">
+          <div style="font-size:14px;font-weight:600;margin-bottom:6px;">Course card</div>
+          <div style="font-size:12px;color:var(--ink-soft);">Instructor name</div>
+        </div>
+      </div>
+      <div class="card" style="width:200px;padding:20px;">
+        <div style="font-size:26px;font-weight:700;font-family:var(--font-display);">2,340</div>
+        <div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Stat tile label</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ICONS -->
+  <div class="section">
+    <h2>Icon set &mdash; 20px, 1.75 stroke, round caps</h2>
+    <div style="display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:20px;color:var(--ink-soft);" class="grid-8">
+      <div style="text-align:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><div style="font-size:11px;margin-top:6px;">Search</div></div>
+      <div style="text-align:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg><div style="font-size:11px;margin-top:6px;">Cart</div></div>
+      <div style="text-align:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg><div style="font-size:11px;margin-top:6px;">Course</div></div>
+      <div style="text-align:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg><div style="font-size:11px;margin-top:6px;">Award</div></div>
+      <div style="text-align:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg><div style="font-size:11px;margin-top:6px;">Dashboard</div></div>
+      <div style="text-align:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><div style="font-size:11px;margin-top:6px;">Users</div></div>
+      <div style="text-align:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 3H4a2 2 0 0 0-2 2v3h20V5a2 2 0 0 0-2-2h-2"></path><circle cx="17" cy="14" r="1.5"></circle></svg><div style="font-size:11px;margin-top:6px;">Payouts</div></div>
+      <div style="text-align:center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg><div style="font-size:11px;margin-top:6px;">Secure</div></div>
+    </div>
+  </div>
+
+  <!-- AVATARS -->
+  <div style="padding:44px 0 80px;">
+    <h2 style="font-size:14px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-faint);margin-bottom:24px;">Avatars</h2>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div style="width:28px;height:28px;border-radius:999px;background:var(--accent-tint);color:var(--accent-strong);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;">AR</div>
+      <div style="width:36px;height:36px;border-radius:999px;background:var(--accent-tint);color:var(--accent-strong);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">AR</div>
+      <div style="width:44px;height:44px;border-radius:999px;background:var(--accent-tint);color:var(--accent-strong);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;">AR</div>
+      <div style="width:64px;height:64px;border-radius:999px;background:var(--accent-tint);color:var(--accent-strong);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;">AR</div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @media (max-width:900px){
+    .ds-header{ flex-direction:column; }
+    .grid-4{ grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+    .grid-2{ grid-template-columns:1fr !important; }
+    .grid-3{ grid-template-columns:1fr !important; }
+    .grid-8{ grid-template-columns:repeat(4,minmax(0,1fr)) !important; }
+  }
+</style>
+
+<script src="../assets/script.js"></script>
+</body>
+</html>

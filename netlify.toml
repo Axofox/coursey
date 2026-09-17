@@ -5,6 +5,11 @@
   node_bundler = "esbuild"
   external_node_modules = ["pg"]
 
+[[redirects]]
+  from = "/home.html"
+  to = "/"
+  status = 301
+
 # Never let the browser cache API responses
 [[headers]]
   for = "/api/*"

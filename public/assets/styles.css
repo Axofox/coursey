@@ -1,0 +1,150 @@
+/* =========================================================
+   Coursehub — Design System / Shared Stylesheet
+   Fonts: Space Grotesk (display) + IBM Plex Sans (body)
+   Theming: CSS custom properties, toggled via [data-theme="dark"]
+   ========================================================= */
+
+:root{
+  --accent:#FF6B47;
+  --bg:#FDF6EC; --surface:#FFFFFF; --surface-alt:#F7EEDF; --border:#ECE1CC; --border-strong:#DFCFAF;
+  --ink:#17171A; --ink-soft:#55555C; --ink-faint:#8B8B92;
+  --accent-tint:#FFE6DC; --accent-strong:#C8431F;
+  --success:#1F8A4C; --success-tint:#E7F5EC;
+  --amber:#B7791F; --amber-tint:#FCF1DE;
+  --danger:#C4432E; --danger-tint:#FBEAE6;
+  --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-xl:20px;
+  --shadow-md:0 16px 36px rgba(23,23,26,0.10);
+  --font-display:'Space Grotesk', system-ui, sans-serif;
+  --font-body:'IBM Plex Sans', system-ui, sans-serif;
+}
+
+[data-theme="dark"]{
+  --bg:#1E1712; --surface:#2A2119; --surface-alt:#332920; --border:#3D3226; --border-strong:#4F4030;
+  --ink:#FBF3E8; --ink-soft:#C9B8A3; --ink-faint:#8F8070;
+  --accent-tint:#4A2A1A; --accent-strong:#FFA98A;
+}
+
+/* ---------- Reset / base ---------- */
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  font-family:var(--font-body);
+  color:var(--ink);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+  transition:background-color .15s ease, color .15s ease;
+}
+h1,h2,h3,h4{font-family:var(--font-display);margin:0;letter-spacing:-0.01em;}
+p{margin:0;}
+a{color:inherit;text-decoration:none;}
+button{font-family:var(--font-body);cursor:pointer;border:none;background:none;color:inherit;}
+input,textarea,select{font-family:var(--font-body);}
+img{max-width:100%;display:block;}
+svg{display:block;}
+::selection{background:var(--accent-tint);color:var(--accent-strong);}
+
+/* ---------- Layout ---------- */
+.container{max-width:1200px;margin:0 auto;padding:0 48px;}
+.container--narrow{max-width:840px;}
+.container--cart{max-width:1080px;}
+.container--ds{max-width:1160px;}
+
+@media (max-width:900px){
+  .container{padding:0 20px;}
+}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 24px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;border:1px solid transparent;white-space:nowrap;transition:background-color .12s ease, border-color .12s ease;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent-strong);}
+.btn-secondary{background:var(--surface);color:var(--ink);border-color:var(--border-strong);}
+.btn-secondary:hover{border-color:var(--ink);}
+.btn-ghost{background:transparent;color:var(--ink-soft);}
+.btn-ghost:hover{color:var(--ink);}
+.btn-danger{background:var(--danger-tint);color:var(--danger);}
+.btn-block{width:100%;}
+.btn-sm{height:40px;padding:0 16px;font-size:13px;}
+
+.iconbtn{width:40px;height:40px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;color:var(--ink-soft);position:relative;background:var(--surface);border:none;flex-shrink:0;}
+.iconbtn:hover{background:var(--surface-alt);color:var(--ink);}
+
+/* ---------- Cards / surfaces ---------- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);}
+
+/* ---------- Badges ---------- */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:0.02em;text-transform:uppercase;}
+.badge-success{background:var(--success-tint);color:var(--success);}
+.badge-amber{background:var(--amber-tint);color:var(--amber);}
+.badge-danger{background:var(--danger-tint);color:var(--danger);}
+.badge-neutral{background:var(--surface-alt);color:var(--ink-soft);}
+.badge-accent{background:var(--accent-tint);color:var(--accent-strong);}
+
+/* ---------- Pills ---------- */
+.pill{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:999px;font-size:13px;font-weight:500;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink-soft);white-space:nowrap;cursor:pointer;}
+.pill.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+.pill-accent.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.pill-outline.active{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-tint);}
+
+/* ---------- Forms ---------- */
+.input{height:44px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);padding:0 14px;font-size:14px;width:100%;background:var(--surface);color:var(--ink);}
+.input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+textarea.input{height:auto;padding:12px 14px;resize:vertical;}
+label{font-size:13px;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:6px;}
+.label-caps{font-size:12px;text-transform:uppercase;letter-spacing:0.03em;color:var(--ink-faint);}
+
+/* ---------- Nav (sidebar) items ---------- */
+.navitem{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;font-size:14px;font-weight:500;color:var(--ink-soft);width:100%;text-align:left;}
+.navitem:hover{background:var(--surface-alt);}
+.navitem.active{background:var(--accent-tint);color:var(--accent-strong);font-weight:600;}
+
+.navlink{font-size:14px;font-weight:500;color:var(--ink-soft);}
+.navlink:hover{color:var(--ink);}
+
+/* ---------- Progress ---------- */
+.progress-track{height:6px;border-radius:999px;background:var(--surface-alt);overflow:hidden;}
+.progress-fill{height:100%;border-radius:999px;background:var(--accent);}
+
+/* ---------- Stars ---------- */
+.stars{display:flex;align-items:center;gap:2px;color:var(--amber);}
+
+/* ---------- Checklist ---------- */
+.check{color:var(--success);flex-shrink:0;margin-top:2px;}
+
+/* ---------- Tables ---------- */
+.tcell{padding:14px 20px;font-size:13px;display:flex;align-items:center;}
+.trow{display:grid;border-bottom:1px solid var(--border);align-items:center;}
+
+/* ---------- Steps ---------- */
+.step-dot{width:30px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+
+/* ---------- Pay badge ---------- */
+.paybadge{border:1px solid var(--border-strong);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--ink-faint);}
+
+/* ---------- Design-system reference page ---------- */
+.section{padding:44px 0;border-bottom:1px solid var(--border);}
+.section h2{font-size:14px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-faint);margin-bottom:24px;}
+.swatch{border-radius:12px;height:72px;border:1px solid var(--border);margin-bottom:10px;}
+
+/* ---------- Mobile shell (390x844 phone frame in the style-guide-free pages) ---------- */
+.tabitem{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--ink-faint);flex:1;background:none;border:none;}
+.tabitem.active{color:var(--accent);}
+
+/* ---------- Utility ---------- */
+.hide{display:none !important;}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
+.skip-link{position:absolute;left:-9999px;top:0;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:0 0 8px 0;z-index:100;}
+.skip-link:focus{left:0;}
+
+/* ---------- Dark-mode toggle icon swap ----------
+   Light mode: show the moon (click to go dark).
+   Dark mode: show the sun (click to go light). */
+.icon-sun{display:none;}
+.icon-moon{display:block;}
+[data-theme="dark"] .icon-sun{display:block;}
+[data-theme="dark"] .icon-moon{display:none;}
+
+/* ---------- Focus visibility ---------- */
+a:focus-visible, button:focus-visible, input:focus-visible, .pill:focus-visible{
+  outline:2px solid var(--accent-strong); outline-offset:2px;
+}

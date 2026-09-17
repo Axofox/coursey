@@ -2,10 +2,16 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "static",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["-y", "serve", "-l", "8765", "public"],
+      "name": "mock",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["/private/tmp/claude-501/-Users-astrofox-Documents-side-hassle-course-website/8bdba854-3815-41a5-81ac-597c7daf05bf/scratchpad/mockserver.mjs"],
       "port": 8765
+    },
+    {
+      "name": "netlify",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["netlify", "dev", "--port", "8888"],
+      "port": 8888
     }
   ]
 }
