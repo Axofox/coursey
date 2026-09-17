@@ -13,6 +13,8 @@ import { SEED_COURSES, SEED_BUNDLES } from "../../netlify/lib/seed.mjs";
 
 const TOKEN = "integration-token";
 let pool, embedded, handler;
+const sent = [];
+const TEST_STRIPE = { fetchImpl: async () => ({ ok: true, json: async () => ({ id: "cs_test_int", url: "https://checkout.stripe.com/c/cs_test_int" }) }) };
 
 async function connect() {
   if (process.env.DATABASE_URL) return new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
@@ -32,14 +34,18 @@ async function resetDb() {
   await pool.query("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
 }
 
-function req(method, path, { token, body } = {}) {
-  const headers = { "x-nf-client-connection-ip": "10.0.0." + Math.floor(Math.random() * 250) };
+const jars = {}; // named cookie jars: "ana", "maya", ...
+function req(method, path, { token, body, as, raw, headers: extra } = {}) {
+  const headers = { "x-nf-client-connection-ip": "10.0.0." + Math.floor(Math.random() * 250), ...(extra || {}) };
   if (token) headers.authorization = "Bearer " + token;
-  if (body !== undefined) headers["content-type"] = "application/json";
-  return new Request("http://localhost" + path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  if (as && jars[as]) headers.cookie = jars[as];
+  if (body !== undefined && raw === undefined) headers["content-type"] = "application/json";
+  return new Request("http://localhost" + path, { method, headers, body: raw !== undefined ? raw : body === undefined ? undefined : JSON.stringify(body) });
 }
-async function call(method, path, opts) {
+async function call(method, path, opts = {}) {
   const res = await handler(req(method, path, opts));
+  const setCookie = res.headers.get("set-cookie");
+  if (opts.as && setCookie) jars[opts.as] = setCookie.split(";")[0];
   const text = await res.text();
   return { status: res.status, body: text ? JSON.parse(text) : null };
 }
@@ -48,7 +54,7 @@ before(async () => {
   process.env.ADMIN_TOKEN = TOKEN;
   pool = await connect();
   await resetDb();
-  handler = createHandler({ query: (t, p) => pool.query(t, p) });
+  handler = createHandler({ query: (t, p) => pool.query(t, p), mailer: async (m) => { sent.push(m); } });
 });
 after(async () => {
   await pool.end();
@@ -58,7 +64,7 @@ after(async () => {
 describe("migrations", () => {
   test("apply cleanly on an empty database and seed the catalog", async () => {
     const applied = await migrate(pool);
-    assert.deepEqual(applied, ["001-marketplace.sql", "002-bundles-reviews-applications.sql", "003-preview-lessons.sql"]);
+    assert.deepEqual(applied, ["001-marketplace.sql", "002-bundles-reviews-applications.sql", "003-preview-lessons.sql", "004-accounts.sql"]);
     const courses = await pool.query("SELECT count(*)::int AS n FROM courses");
     assert.equal(courses.rows[0].n, SEED_COURSES.length);
     const bundles = await pool.query("SELECT count(*)::int AS n FROM bundles");
@@ -82,11 +88,13 @@ describe("migrations", () => {
     await pool.query("INSERT INTO categories (id, name) VALUES ('design', 'Design')");
     await pool.query("INSERT INTO courses (category_id, title, curriculum) VALUES ('design', 'Legacy', $1)", [JSON.stringify([{ title: "S", lessons: [{ title: "L", duration: "1:00" }] }])]);
     const applied = await migrate(pool);
-    assert.deepEqual(applied, ["002-bundles-reviews-applications.sql", "003-preview-lessons.sql"]);
-    const { rows } = await pool.query("SELECT curriculum->0->'lessons'->0->>'preview' AS p, title FROM courses");
+    assert.deepEqual(applied, ["002-bundles-reviews-applications.sql", "003-preview-lessons.sql", "004-accounts.sql"]);
+    const { rows } = await pool.query("SELECT curriculum->0->'lessons'->0->>'preview' AS p, title, status, published FROM courses");
     assert.equal(rows.length, 1); // existing data kept, no reseed
     assert.equal(rows[0].title, "Legacy");
     assert.equal(rows[0].p, "true"); // 003 flagged the first lesson
+    assert.equal(rows[0].status, "published"); // 004 converted the boolean
+    assert.equal(rows[0].published, true);
     await resetDb();
     await migrate(pool);
   });
@@ -112,7 +120,7 @@ describe("API against the real database", () => {
   });
 
   test("course lifecycle: create draft → hidden → publish → update → delete", async () => {
-    const created = await call("POST", "/api/courses", { token: TOKEN, body: { title: "Integration Course", category_id: "design", price: 19.5, published: false, curriculum: [{ title: "S1", lessons: [{ title: "L1", duration: "3:00", preview: true }] }] } });
+    const created = await call("POST", "/api/courses", { token: TOKEN, body: { title: "Integration Course", category_id: "design", price: 19.5, status: "draft", curriculum: [{ title: "S1", lessons: [{ title: "L1", duration: "3:00", preview: true }] }] } });
     assert.equal(created.status, 201);
     const id = created.body.id;
     assert.equal((await call("GET", "/api/courses/" + id)).status, 404); // drafts are hidden publicly
@@ -141,26 +149,129 @@ describe("API against the real database", () => {
     assert.equal((await call("DELETE", "/api/categories/music-production", { token: TOKEN })).status, 204);
   });
 
-  test("reviews: pending until approved, then drive the course rating", async () => {
+  test("accounts: first signup is admin, later ones learners; sessions work via cookie", async () => {
+    const admin = await call("POST", "/api/auth/signup", { as: "boss", body: { name: "Sam", email: "sam@example.com", password: "boss-password-1" } });
+    assert.equal(admin.status, 201);
+    assert.equal(admin.body.role, "admin");
+    const ana = await call("POST", "/api/auth/signup", { as: "ana", body: { name: "Ana", email: "ana@example.com", password: "ana-password-1" } });
+    assert.equal(ana.body.role, "learner");
+    assert.equal((await call("GET", "/api/auth/me", { as: "ana" })).body.email, "ana@example.com");
+    assert.equal((await call("GET", "/api/auth/check", { as: "boss" })).status, 204);
+    assert.equal((await call("GET", "/api/auth/check", { as: "ana" })).status, 401);
+    assert.equal((await call("POST", "/api/auth/login", { as: "ana2", body: { email: "ANA@example.com", password: "wrong-password-1" } })).status, 401);
+    assert.equal((await call("POST", "/api/auth/login", { as: "ana2", body: { email: "ANA@example.com", password: "ana-password-1" } })).status, 200);
+    assert.match(sent.find((m) => m.to === "ana@example.com").subject, /Welcome/);
+  });
+
+  test("password reset: token from the email works once and logs other sessions out", async () => {
+    await call("POST", "/api/auth/forgot", { body: { email: "ana@example.com" } });
+    const mail = sent.filter((m) => m.to === "ana@example.com").at(-1);
+    const token = decodeURIComponent(/token=([^\s&]+)/.exec(mail.text)[1]);
+    assert.equal((await call("POST", "/api/auth/reset", { body: { token, password: "ana-password-2" } })).status, 204);
+    assert.equal((await call("POST", "/api/auth/reset", { body: { token, password: "ana-password-3" } })).status, 400); // used
+    assert.equal((await call("GET", "/api/auth/me", { as: "ana2" })).status, 401); // old session gone
+    assert.equal((await call("POST", "/api/auth/login", { as: "ana", body: { email: "ana@example.com", password: "ana-password-2" } })).status, 200);
+  });
+
+  test("reviews: signed-in only, pending until approved, then drive the course rating", async () => {
     const before = (await call("GET", "/api/courses/2")).body;
     assert.equal(before.rating, 4.8);
-    const submitted = await call("POST", "/api/reviews", { body: { course_id: 2, name: "Ana", rating: 3, body: "Solid but the pandas section drags a little." } });
+    assert.equal((await call("POST", "/api/reviews", { body: { course_id: 2, rating: 3, body: "Solid but the pandas section drags a little." } })).status, 401);
+    const submitted = await call("POST", "/api/reviews", { as: "ana", body: { course_id: 2, rating: 3, body: "Solid but the pandas section drags a little." } });
     assert.equal(submitted.status, 201);
+    assert.equal((await call("POST", "/api/reviews", { as: "ana", body: { course_id: 2, rating: 5, body: "Changed my mind, it is great." } })).status, 409);
     const stillManual = (await call("GET", "/api/courses/2")).body;
     assert.equal(stillManual.rating, 4.8);
     assert.equal(stillManual.reviews.length, 0);
-    const pending = await call("GET", "/api/reviews?status=pending", { token: TOKEN });
+    const pending = await call("GET", "/api/reviews?status=pending", { as: "boss" });
     assert.equal(pending.body.length, 1);
-    assert.equal(pending.body[0].course_title, "Python for Data Analysis");
-    await call("PUT", "/api/reviews/" + submitted.body.id, { token: TOKEN, body: { status: "approved" } });
+    assert.equal(pending.body[0].name, "Ana"); // account name, not a typed one
+    await call("PUT", "/api/reviews/" + submitted.body.id, { as: "boss", body: { status: "approved" } });
     const after = (await call("GET", "/api/courses/2")).body;
     assert.equal(after.rating, 3);
     assert.equal(after.rating_count, 1);
-    assert.equal(after.reviews[0].name, "Ana");
+    assert.equal(after.reviews[0].verified, false); // not enrolled
     const card = (await call("GET", "/api/courses?q=pandas")).body[0];
-    assert.equal(card.rating, 3); // list endpoint agrees
+    assert.equal(card.rating, 3);
     await call("DELETE", "/api/reviews/" + submitted.body.id, { token: TOKEN });
     assert.equal((await call("GET", "/api/courses/2")).body.rating, 4.8);
+  });
+
+  test("checkout prices from the database; the webhook fulfils the order and enrols", async () => {
+    const { signPayload } = await import("../../netlify/lib/stripe.mjs");
+    process.env.STRIPE_SECRET_KEY = "sk_test_int";
+    process.env.STRIPE_WEBHOOK_SECRET = "whsec_int";
+    handler = createHandler({ query: (t, p) => pool.query(t, p), mailer: async (m) => { sent.push(m); }, stripe: TEST_STRIPE });
+    const r = await call("POST", "/api/checkout", { as: "ana", body: { items: [{ kind: "bundle", id: 1, price: 1 }, { kind: "course", id: 1 }] } });
+    assert.equal(r.status, 200);
+    const { rows: [order] } = await pool.query("SELECT * FROM orders WHERE id = $1", [r.body.order_id]);
+    assert.equal(order.amount_cents, 8900 + 4900);
+    assert.equal(order.status, "pending");
+    assert.equal(order.stripe_session_id, "cs_test_int");
+    assert.equal((await call("GET", "/api/courses/1", { as: "ana" })).body.enrolled, false);
+    // Stripe calls back
+    const payload = JSON.stringify({ type: "checkout.session.completed", data: { object: { id: "cs_test_int", payment_status: "paid", amount_total: 13800, payment_intent: "pi_1", metadata: { order_id: String(order.id), user_id: "2" } } } });
+    const wh = await call("POST", "/api/stripe/webhook", { raw: payload, headers: { "stripe-signature": signPayload(payload, "whsec_int") } });
+    assert.equal(wh.status, 200);
+    const paid = (await call("GET", "/api/orders/" + order.id, { as: "ana" })).body;
+    assert.equal(paid.status, "paid");
+    const mine = (await call("GET", "/api/me/courses", { as: "ana" })).body;
+    assert.deepEqual(mine.map((c) => c.id).sort(), [1, 4, 7]); // bundle 1 = courses 1, 7, 4 — plus course 1 once
+    const detail = (await call("GET", "/api/courses/1", { as: "ana" })).body;
+    assert.equal(detail.enrolled, true);
+    assert.equal((await call("GET", "/api/orders/" + order.id)).status, 401);
+    assert.match(sent.at(-1).subject, /purchase/);
+    // replaying the webhook is harmless
+    await call("POST", "/api/stripe/webhook", { raw: payload, headers: { "stripe-signature": signPayload(payload, "whsec_int") } });
+    const { rows } = await pool.query("SELECT count(*)::int AS n FROM enrolments WHERE user_id = 2");
+    assert.equal(rows[0].n, 3);
+    delete process.env.STRIPE_SECRET_KEY;
+    delete process.env.STRIPE_WEBHOOK_SECRET;
+  });
+
+  test("progress: every lesson done issues a certificate that anyone can verify", async () => {
+    const course = (await call("GET", "/api/courses/7", { as: "ana" })).body; // Figma handoff, 6 lessons, enrolled via bundle
+    let last;
+    course.curriculum.forEach((s, si) => s.lessons.forEach((l, li) => { last = { si, li }; }));
+    for (const [si, s] of course.curriculum.entries()) {
+      for (const [li] of s.lessons.entries()) {
+        const r = await call("POST", "/api/progress", { as: "ana", body: { course_id: 7, section: si, lesson: li } });
+        assert.equal(r.status, 200);
+        if (si === last.si && li === last.li) assert.ok(r.body.certificate_id, "certificate issued at 100%");
+        else assert.equal(r.body.certificate_id, null);
+      }
+    }
+    const mine = (await call("GET", "/api/me/courses", { as: "ana" })).body.find((c) => c.id === 7);
+    assert.equal(mine.progress_pct, 100);
+    const cert = await call("GET", "/api/certificates/" + mine.certificate_id);
+    assert.equal(cert.status, 200);
+    assert.equal(cert.body.learner_name, "Ana");
+    assert.equal(cert.body.course_title, "Figma to Front-End Handoff");
+    assert.equal((await call("POST", "/api/progress", { as: "ana", body: { course_id: 3, section: 0, lesson: 1 } })).status, 402); // not enrolled, not a preview
+  });
+
+  test("instructor flow: application approved → role → course pending → admin publishes → live", async () => {
+    await call("POST", "/api/auth/signup", { as: "maya", body: { name: "Maya Chen", email: "maya@example.com", password: "maya-password-1" } });
+    assert.equal((await call("POST", "/api/courses", { as: "maya", body: { title: "Nope", category_id: "design" } })).status, 401);
+    const app = await call("POST", "/api/applications", { as: "maya", body: { expertise: "Design systems", bio: "Ten years at Figma and Airbnb." } });
+    assert.equal(app.status, 201);
+    await call("PUT", "/api/applications/" + app.body.id, { as: "boss", body: { status: "approved" } });
+    assert.equal((await call("GET", "/api/auth/me", { as: "maya" })).body.role, "instructor");
+    const created = await call("POST", "/api/courses", { as: "maya", body: { title: "Design Tokens in Practice", category_id: "design", price: 39, published: true, curriculum: [{ title: "S", lessons: [{ title: "L", preview: true }] }] } });
+    assert.equal(created.status, 201);
+    assert.equal(created.body.status, "pending");
+    assert.equal(created.body.owner_id, 3);
+    assert.equal((await call("GET", "/api/courses/" + created.body.id)).status, 404); // not public yet
+    const pending = (await call("GET", "/api/courses?all=1&status=pending", { as: "boss" })).body;
+    assert.equal(pending.length, 1);
+    await call("PUT", "/api/courses/" + created.body.id, { as: "boss", body: { published: true } });
+    assert.equal((await call("GET", "/api/courses/" + created.body.id)).status, 200);
+    assert.match(sent.at(-1).subject, /is live/);
+    const studio = (await call("GET", "/api/me/instructor", { as: "maya" })).body;
+    assert.equal(studio.courses.length, 1);
+    assert.equal(studio.gross_cents, 0);
+    assert.equal((await call("PUT", "/api/courses/" + created.body.id, { as: "ana", body: { title: "hijack" } })).status, 401);
+    assert.equal((await call("DELETE", "/api/courses/" + created.body.id, { as: "maya" })).status, 204);
   });
 
   test("bundles resolve their courses and skip unpublished ones", async () => {
@@ -191,8 +302,8 @@ describe("API against the real database", () => {
   });
 
   test("deleting a course cascades its reviews", async () => {
-    const c = await call("POST", "/api/courses", { token: TOKEN, body: { title: "Temp", category_id: "design" } });
-    const r = await call("POST", "/api/reviews", { body: { course_id: c.body.id, name: "X", rating: 4, body: "Temporary review text." } });
+    const c = await call("POST", "/api/courses", { token: TOKEN, body: { title: "Temp", category_id: "design", status: "published" } });
+    const r = await call("POST", "/api/reviews", { as: "ana", body: { course_id: c.body.id, rating: 4, body: "Temporary review text." } });
     assert.equal(r.status, 201);
     await call("DELETE", "/api/courses/" + c.body.id, { token: TOKEN });
     const { rows } = await pool.query("SELECT count(*)::int AS n FROM reviews WHERE id = $1", [r.body.id]);

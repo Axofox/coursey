@@ -24,15 +24,27 @@ export function fakeDb(script = []) {
   return { query, calls };
 }
 
-export function handlerWith(script) {
+export const ADMIN = { id: 1, email: "admin@example.com", name: "Admin", role: "admin", password_hash: "" };
+export const LEARNER = { id: 2, email: "ana@example.com", name: "Ana", role: "learner", password_hash: "" };
+export const INSTRUCTOR = { id: 3, email: "maya@example.com", name: "Maya Chen", role: "instructor", password_hash: "" };
+
+/* A session lookup that returns `user` when the request carries cookie ch_session=<user.role> */
+export const sessionFor = (...users) => [/FROM sessions s JOIN users u/, (params) => users.filter((u) => params[0] === sha256("sess-" + u.role))];
+import { createHash } from "node:crypto";
+const sha256 = (s) => createHash("sha256").update(s).digest("hex");
+
+export function handlerWith(script = [], opts = {}) {
   resetRateLimits();
-  const db = fakeDb(script);
-  return { handler: createHandler({ query: db.query }), db };
+  const db = fakeDb([sessionFor(ADMIN, LEARNER, INSTRUCTOR), ...script]);
+  const sent = [];
+  const mailer = async (msg) => { sent.push(msg); };
+  return { handler: createHandler({ query: db.query, mailer, ...opts }), db, sent };
 }
 
-export function request(method, path, { token, body } = {}) {
+export function request(method, path, { token, body, as } = {}) {
   const headers = {};
   if (token) headers.authorization = "Bearer " + token;
+  if (as) headers.cookie = "ch_session=sess-" + as; // "admin" | "learner" | "instructor"
   if (body !== undefined) headers["content-type"] = "application/json";
   return new Request("http://localhost" + path, {
     method,

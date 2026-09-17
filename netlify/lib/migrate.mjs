@@ -52,8 +52,8 @@ export async function seedIfEmpty(client, log = () => {}) {
       await client.query(
         `INSERT INTO courses (category_id, title, subtitle, description, instructor_name, instructor_title,
            instructor_bio, level, language, price, original_price, badge, rating, rating_count, students,
-           resources, learn, requirements, curriculum, featured, published, sort_order)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,true,$21)`,
+           resources, learn, requirements, curriculum, featured, status, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,'published',$21)`,
         [c.category_id, c.title, c.subtitle ?? "", c.description ?? "", c.instructor_name ?? "", c.instructor_title ?? "",
          c.instructor_bio ?? "", c.level ?? "Beginner", c.language ?? "English", c.price ?? 0, c.original_price ?? null, c.badge ?? null,
          c.rating ?? 0, c.rating_count ?? 0, c.students ?? 0, c.resources ?? 0, JSON.stringify(c.learn ?? []),
