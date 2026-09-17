@@ -6,7 +6,7 @@
   self-hosted...). Changing hosts means changing that one variable.
 */
 import pg from "pg";
-import { SEED_CATEGORIES, SEED_COURSES } from "./seed.mjs";
+import { SEED_CATEGORIES, SEED_COURSES, SEED_BUNDLES } from "./seed.mjs";
 
 let pool;
 let schemaReady;
@@ -28,11 +28,14 @@ async function getPool() {
 }
 
 /*
-  Schema version 2 — the Coursehub marketplace model.
-  Version 1 was the early mockup (categories + bare courses) and only ever
-  held placeholder seed data, so upgrading drops it and reseeds.
+  Schema versions:
+    1  the early mockup (categories + bare courses) — only ever held seed data,
+       so upgrading drops it and reseeds
+    2  the Coursehub marketplace model (categories, courses)
+    3  adds bundles, reviews (moderated) and instructor applications
+  SCHEMA is idempotent, so upgrading just re-runs it.
 */
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 const SCHEMA = `
   CREATE TABLE IF NOT EXISTS meta (
@@ -76,6 +79,36 @@ const SCHEMA = `
     updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
   );
   CREATE INDEX IF NOT EXISTS courses_category_idx ON courses(category_id);
+  CREATE TABLE IF NOT EXISTS bundles (
+    id             SERIAL PRIMARY KEY,
+    name           TEXT NOT NULL,
+    description    TEXT NOT NULL DEFAULT '',
+    price          NUMERIC(10,2) NOT NULL DEFAULT 0,
+    course_ids     JSONB NOT NULL DEFAULT '[]',
+    published      BOOLEAN NOT NULL DEFAULT true,
+    sort_order     INTEGER NOT NULL DEFAULT 0,
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+  );
+  CREATE TABLE IF NOT EXISTS reviews (
+    id          SERIAL PRIMARY KEY,
+    course_id   INTEGER NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    name        TEXT NOT NULL,
+    rating      INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    body        TEXT NOT NULL,
+    status      TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved')),
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+  );
+  CREATE INDEX IF NOT EXISTS reviews_course_idx ON reviews(course_id, status);
+  CREATE TABLE IF NOT EXISTS instructor_applications (
+    id            SERIAL PRIMARY KEY,
+    name          TEXT NOT NULL,
+    email         TEXT NOT NULL,
+    expertise     TEXT NOT NULL,
+    bio           TEXT NOT NULL DEFAULT '',
+    portfolio_url TEXT NOT NULL DEFAULT '',
+    status        TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'approved', 'rejected')),
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+  );
 `;
 
 async function currentVersion(p) {
@@ -108,6 +141,21 @@ async function seed(p) {
   }
 }
 
+// Bundles reference courses by title so this also works on a database that
+// already had the courses seeded.
+async function seedBundles(p) {
+  const { rows } = await p.query("SELECT id, title FROM courses");
+  const idByTitle = new Map(rows.map((r) => [r.title, r.id]));
+  for (const [i, b] of SEED_BUNDLES.entries()) {
+    const ids = b.courses.map((t) => idByTitle.get(t)).filter(Boolean);
+    if (!ids.length) continue;
+    await p.query(
+      "INSERT INTO bundles (name, description, price, course_ids, sort_order) VALUES ($1,$2,$3,$4,$5)",
+      [b.name, b.description, b.price, JSON.stringify(ids), i]
+    );
+  }
+}
+
 async function ensureSchema() {
   if (!schemaReady) {
     schemaReady = (async () => {
@@ -121,6 +169,8 @@ async function ensureSchema() {
           await client.query(SCHEMA);
           const { rows } = await client.query("SELECT count(*)::int AS n FROM categories");
           if (rows[0].n === 0) await seed(client);
+          const bundles = await client.query("SELECT count(*)::int AS n FROM bundles");
+          if (bundles.rows[0].n === 0) await seedBundles(client);
           await client.query(
             "INSERT INTO meta (key, value) VALUES ('schema_version', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
             [String(SCHEMA_VERSION)]

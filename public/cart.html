@@ -62,23 +62,23 @@
           <button class="pill" data-tab-group="payment" data-tab="applepay">Apple Pay</button>
         </div>
 
-        <div data-tab-group="payment" data-tab-panel="card" class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
+        <form data-tab-group="payment" data-tab-panel="card" data-checkout-form novalidate onsubmit="return false" class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
           <div>
             <label for="cc-name">Name on card</label>
-            <input id="cc-name" class="input" type="text" placeholder="Alex Rivera">
+            <input id="cc-name" name="cc-name" class="input" type="text" placeholder="Alex Rivera">
           </div>
           <div>
             <label for="cc-number">Card number</label>
-            <input id="cc-number" class="input" type="text" placeholder="4242 4242 4242 4242">
+            <input id="cc-number" name="cc-number" class="input" type="text" placeholder="4242 4242 4242 4242">
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
             <div>
               <label for="cc-expiry">Expiry</label>
-              <input id="cc-expiry" class="input" type="text" placeholder="MM / YY">
+              <input id="cc-expiry" name="cc-expiry" class="input" type="text" placeholder="MM / YY">
             </div>
             <div>
               <label for="cc-cvc">CVC</label>
-              <input id="cc-cvc" class="input" type="text" placeholder="123">
+              <input id="cc-cvc" name="cc-cvc" class="input" type="text" placeholder="123">
             </div>
           </div>
           <div style="border-top:1px solid var(--border);margin-top:4px;padding-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
@@ -88,10 +88,10 @@
             </div>
             <div>
               <label for="cc-postal">Postal code</label>
-              <input id="cc-postal" class="input" type="text" placeholder="81675">
+              <input id="cc-postal" name="cc-postal" class="input" type="text" placeholder="81675">
             </div>
           </div>
-        </div>
+        </form>
 
         <div data-tab-group="payment" data-tab-panel="paypal" class="card hide" style="padding:36px;text-align:center;color:var(--ink-soft);font-size:14px;">
           You&rsquo;ll be redirected to PayPal to complete payment securely.

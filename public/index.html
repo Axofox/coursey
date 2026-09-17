@@ -33,7 +33,7 @@
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-      <a class="navlink nav-teach" href="seller-dashboard.html" style="margin-right:8px;">Teach on Coursehub</a>
+      <a class="navlink nav-teach" href="teach.html" style="margin-right:8px;">Teach on Coursehub</a>
       <button class="iconbtn" aria-label="Toggle dark mode" data-theme-toggle>
         <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
         <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
@@ -103,64 +103,9 @@
     <div class="container">
       <div style="margin-bottom:24px;">
         <h2 style="font-size:26px;margin-bottom:6px;">Course bundles</h2>
-        <p style="font-size:14px;color:var(--ink-soft);">Save when you learn a full path, start to finish <span class="badge badge-neutral" style="margin-left:6px;">Coming soon</span></p>
+        <p style="font-size:14px;color:var(--ink-soft);">Save when you learn a full path, start to finish</p>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:22px;" class="grid-bundles">
-        <a href="#bundles" class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px;background:var(--surface);">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-            <div style="display:flex;">
-              <div style="width:52px;height:52px;border-radius:10px;background:#EDEBFB;"></div>
-              <div style="width:52px;height:52px;border-radius:10px;margin-left:-18px;background:#E3F1FB;"></div>
-              <div style="width:52px;height:52px;border-radius:10px;margin-left:-18px;background:#FBE7EC;"></div>
-            </div>
-            <span class="badge badge-accent">Save 58%</span>
-          </div>
-          <div>
-            <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Product Design Career Path</div>
-            <div style="font-size:13px;color:var(--ink-soft);">6 courses · 48h total</div>
-          </div>
-          <div style="display:flex;align-items:baseline;gap:8px;">
-            <span style="font-size:18px;font-weight:700;">$179</span>
-            <span style="font-size:13px;color:var(--ink-faint);text-decoration:line-through;">$420</span>
-          </div>
-        </a>
-        <a href="#bundles" class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px;background:var(--surface);">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-            <div style="display:flex;">
-              <div style="width:52px;height:52px;border-radius:10px;background:#E4F3EA;"></div>
-              <div style="width:52px;height:52px;border-radius:10px;margin-left:-18px;background:#E3F1FB;"></div>
-              <div style="width:52px;height:52px;border-radius:10px;margin-left:-18px;background:#FFF6DD;"></div>
-            </div>
-            <span class="badge badge-accent">Save 56%</span>
-          </div>
-          <div>
-            <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Data Analyst Starter Bundle</div>
-            <div style="font-size:13px;color:var(--ink-soft);">5 courses · 36h total</div>
-          </div>
-          <div style="display:flex;align-items:baseline;gap:8px;">
-            <span style="font-size:18px;font-weight:700;">$149</span>
-            <span style="font-size:13px;color:var(--ink-faint);text-decoration:line-through;">$340</span>
-          </div>
-        </a>
-        <a href="#bundles" class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px;background:var(--surface);">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-            <div style="display:flex;">
-              <div style="width:52px;height:52px;border-radius:10px;background:#FBE7EC;"></div>
-              <div style="width:52px;height:52px;border-radius:10px;margin-left:-18px;background:#FDEEDC;"></div>
-              <div style="width:52px;height:52px;border-radius:10px;margin-left:-18px;background:#EDEBFB;"></div>
-            </div>
-            <span class="badge badge-accent">Save 62%</span>
-          </div>
-          <div>
-            <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Marketing Foundations Set</div>
-            <div style="font-size:13px;color:var(--ink-soft);">4 courses · 24h total</div>
-          </div>
-          <div style="display:flex;align-items:baseline;gap:8px;">
-            <span style="font-size:18px;font-weight:700;">$99</span>
-            <span style="font-size:13px;color:var(--ink-faint);text-decoration:line-through;">$260</span>
-          </div>
-        </a>
-      </div>
+      <div style="display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:22px;" class="grid-bundles" data-bundle-grid></div>
     </div>
   </div>
 
@@ -195,7 +140,7 @@
       <div>
         <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:#8A8A90;margin-bottom:14px;">For instructors</div>
         <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;color:#C8C8CC;">
-          <a href="seller-dashboard.html">Instructor studio</a><a href="course-upload.html">Create a course</a>
+          <a href="teach.html">Apply to teach</a><a href="seller-dashboard.html">Instructor studio</a>
         </div>
       </div>
       <div>

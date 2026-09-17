@@ -4,7 +4,7 @@
     {
       "name": "mock",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["/private/tmp/claude-501/-Users-astrofox-Documents-side-hassle-course-website/8bdba854-3815-41a5-81ac-597c7daf05bf/scratchpad/mockserver.mjs"],
+      "runtimeArgs": ["scripts/mock-server.mjs"],
       "port": 8765
     },
     {

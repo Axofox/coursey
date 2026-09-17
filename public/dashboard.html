@@ -244,30 +244,6 @@
 
       <!-- WISHLIST -->
       <div data-tab-group="dashboard" data-tab-panel="wishlist" class="hide" style="display:flex;flex-direction:column;gap:12px;">
-        <div class="card" data-wishlist-row style="padding:14px;display:flex;align-items:center;gap:16px;">
-          <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#EDEBFB;"></a>
-          <div style="flex-grow:1;">
-            <div style="font-size:14px;font-weight:600;margin-bottom:3px;">Figma to Front-End Handoff</div>
-            <div style="font-size:12px;color:var(--ink-soft);">Maya Chen</div>
-          </div>
-          <div style="font-size:15px;font-weight:700;">$54</div>
-          <a href="cart.html" class="btn btn-primary" style="height:36px;">Move to cart</a>
-          <button data-remove-row aria-label="Remove" style="color:var(--ink-faint);padding:6px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        </div>
-        <div class="card" data-wishlist-row style="padding:14px;display:flex;align-items:center;gap:16px;">
-          <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#FBE7EC;"></a>
-          <div style="flex-grow:1;">
-            <div style="font-size:14px;font-weight:600;margin-bottom:3px;">Advanced SEO Strategy</div>
-            <div style="font-size:12px;color:var(--ink-soft);">Nina Torres</div>
-          </div>
-          <div style="font-size:15px;font-weight:700;">$44</div>
-          <a href="cart.html" class="btn btn-primary" style="height:36px;">Move to cart</a>
-          <button data-remove-row aria-label="Remove" style="color:var(--ink-faint);padding:6px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        </div>
         <div class="card hide" data-wishlist-empty style="padding:40px;text-align:center;color:var(--ink-faint);font-size:14px;">Your wishlist is empty.</div>
       </div>
 
@@ -351,20 +327,10 @@
       });
     });
 
-    /* Wishlist remove */
-    var wishlistList = document.querySelectorAll('[data-wishlist-row]');
-    document.querySelectorAll('[data-wishlist-row] [data-remove-row]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var row = btn.closest('[data-wishlist-row]');
-        if (row) row.remove();
-        var remaining = document.querySelectorAll('[data-wishlist-row]');
-        var empty = document.querySelector('[data-wishlist-empty]');
-        if (empty) empty.classList.toggle('hide', remaining.length > 0);
-      });
-    });
   });
 </script>
 <script src="assets/api.js"></script>
 <script src="assets/script.js"></script>
+<script src="assets/dashboard.js"></script>
 </body>
 </html>

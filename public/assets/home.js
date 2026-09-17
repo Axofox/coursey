@@ -144,7 +144,40 @@
     } catch (e) {}
   }
 
+  function bundleCard(b) {
+    var save = b.total_value > b.price ? Math.round((1 - b.price / b.total_value) * 100) : 0;
+    var totals = b.courses.reduce(function (n, c) { return n + (c.lesson_count || 0); }, 0);
+    return '<a href="bundle.html?id=' + b.id + '" class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px;background:var(--surface);">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+        '<div style="display:flex;">' + b.courses.slice(0, 3).map(function (c, i) {
+          return '<div style="width:52px;height:52px;border-radius:10px;background:' + esc(c.icon_bg) + ";" + (i ? "margin-left:-18px;" : "") + '"></div>';
+        }).join("") + "</div>" +
+        (save ? '<span class="badge badge-accent">Save ' + save + "%</span>" : "") +
+      "</div>" +
+      "<div>" +
+        '<div style="font-size:16px;font-weight:600;margin-bottom:4px;">' + esc(b.name) + "</div>" +
+        '<div style="font-size:13px;color:var(--ink-soft);">' + b.courses.length + " course" + (b.courses.length === 1 ? "" : "s") + (totals ? " \u00B7 " + totals + " lessons" : "") + "</div>" +
+      "</div>" +
+      '<div style="display:flex;align-items:baseline;gap:8px;">' +
+        '<span style="font-size:18px;font-weight:700;">' + H.money(b.price) + "</span>" +
+        (save ? '<span style="font-size:13px;color:var(--ink-faint);text-decoration:line-through;">' + H.money(b.total_value) + "</span>" : "") +
+      "</div></a>";
+  }
+  async function loadBundles() {
+    var grid = document.querySelector("[data-bundle-grid]");
+    if (!grid) return;
+    try {
+      var bundles = (await H.api.bundles()).filter(function (b) { return b.courses.length; });
+      var section = document.getElementById("bundles");
+      if (!bundles.length) { if (section) section.style.display = "none"; return; }
+      grid.innerHTML = bundles.map(bundleCard).join("");
+    } catch (e) {
+      grid.innerHTML = '<p style="color:var(--ink-faint);font-size:14px;">Couldn\u2019t load bundles right now.</p>';
+    }
+  }
+
   readUrl();
   loadCategories().then(function () { applyState(false); });
   loadStats();
+  loadBundles();
 })();

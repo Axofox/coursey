@@ -1,9 +1,10 @@
 /* =========================================================
    Coursehub — Shared interaction layer (vanilla JS, no deps)
-   Covers every page: theme toggle, tabs, accordions, pill
-   groups, and a couple of page-specific helpers guarded by
-   element existence checks so this one file can be included
-   everywhere.
+   Covers every page: theme toggle, tabs, pill groups, cart
+   maths and the course-editor stepper, each guarded by element
+   existence checks so this one file can be included everywhere.
+   (Accordions, wishlist and add-to-cart moved to the page scripts
+   that render that markup.)
    ========================================================= */
 (function () {
   "use strict";
@@ -53,27 +54,6 @@
   }
 
   /* ---------------------------------------------------------
-     3. ACCORDIONS
-     Markup contract:
-       <button data-accordion-toggle="sec1" aria-expanded="false">...</button>
-       <div data-accordion-panel="sec1" class="hide">...</div>
-     Toggling opens/closes just that section (independent,
-     not exclusive — several can be open at once).
-  --------------------------------------------------------- */
-  function initAccordions() {
-    document.querySelectorAll("[data-accordion-toggle]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var id = btn.getAttribute("data-accordion-toggle");
-        var panel = document.querySelector('[data-accordion-panel="' + id + '"]');
-        var expanded = btn.getAttribute("aria-expanded") === "true";
-        btn.setAttribute("aria-expanded", String(!expanded));
-        btn.classList.toggle("is-open", !expanded);
-        if (panel) panel.classList.toggle("hide", expanded);
-      });
-    });
-  }
-
-  /* ---------------------------------------------------------
      4. PILL GROUPS (single-select chips / filters)
      Markup contract:
        <button data-pill-group="cat" data-pill="design" class="pill active">Design</button>
@@ -96,20 +76,6 @@
           });
         }
       });
-    });
-  }
-
-  /* ---------------------------------------------------------
-     5. ADD-TO-CART toggle (course detail sticky purchase card)
-  --------------------------------------------------------- */
-  function initAddToCart() {
-    var btn = document.querySelector("[data-add-to-cart]");
-    if (!btn) return;
-    btn.addEventListener("click", function () {
-      var added = btn.classList.toggle("is-added");
-      btn.textContent = added ? "Added to cart" : "Add to cart";
-      btn.style.color = added ? "var(--success)" : "";
-      btn.style.borderColor = added ? "var(--success)" : "";
     });
   }
 
@@ -255,38 +221,11 @@
     render();
   }
 
-  /* ---------------------------------------------------------
-     9. ADMIN MODERATION ROWS
-     Intentionally NOT handled generically here — admin-dashboard.html
-     owns this interaction inline because it also needs to update the
-     sidebar's pending-count badge and swap the Review/Close label,
-     which a generic handler can't know about. Binding both would
-     double-toggle the same click. See the inline <script> at the
-     bottom of admin-dashboard.html for data-mod-row / data-mod-expand /
-     data-mod-detail / data-mod-approve / data-mod-reject.
-  --------------------------------------------------------- */
-
-  /* ---------------------------------------------------------
-     10. WISHLIST heart toggle (used on catalog + mobile cards)
-  --------------------------------------------------------- */
-  function initWishlist() {
-    document.querySelectorAll("[data-wishlist-toggle]").forEach(function (btn) {
-      btn.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        btn.classList.toggle("is-active");
-      });
-    });
-  }
-
   document.addEventListener("DOMContentLoaded", function () {
     initTheme();
     initTabs();
-    initAccordions();
     initPills();
-    initAddToCart();
     initCart();
     initStepper();
-    initWishlist();
   });
 })();

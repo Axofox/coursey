@@ -63,9 +63,19 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
         Categories
       </button>
+      <button class="navitem" data-tab-group="admin" data-tab="bundles" data-tab-title="Bundles">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        Bundles
+      </button>
+      <button class="navitem" data-tab-group="admin" data-tab="reviews" data-tab-title="Reviews">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        Reviews
+        <span data-pending-reviews class="hide" style="margin-left:auto;background:var(--amber);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;">0</span>
+      </button>
       <button class="navitem" data-tab-group="admin" data-tab="instructors" data-tab-title="Instructors">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 22a9 9 0 1 0-17.18 0"></path><circle cx="12" cy="8" r="5"></circle></svg>
         Instructors
+        <span data-new-applications class="hide" style="margin-left:auto;background:var(--amber);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;">0</span>
       </button>
       <button class="navitem" data-tab-group="admin" data-tab="learners" data-tab-title="Learners">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
@@ -116,46 +126,14 @@
 
       <!-- OVERVIEW -->
       <div data-tab-group="admin" data-tab-panel="overview">
-        <div class="notice" style="margin-bottom:16px;">Sample data — this section isn’t connected to real accounts or payments yet.</div>
         <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:32px;" class="grid-4">
-          <div class="card" style="padding:20px;"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);">$184,200</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Platform revenue</div></div>
-          <div class="card" style="padding:20px;"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);">48,210</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Active learners</div></div>
-          <div class="card" style="padding:20px;"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);">1,840</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Courses published</div></div>
-          <div class="card" style="padding:20px;border-color:var(--amber);"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);color:var(--amber);">12</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Pending reviews</div></div>
+          <div class="card" style="padding:20px;"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);" data-ov="courses">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Published courses</div></div>
+          <div class="card" style="padding:20px;"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);" data-ov="drafts">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Drafts</div></div>
+          <div class="card" style="padding:20px;" data-ov-card="reviews"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);" data-ov="reviews">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Reviews awaiting approval</div></div>
+          <div class="card" style="padding:20px;" data-ov-card="applications"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);" data-ov="applications">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">New instructor applications</div></div>
         </div>
         <h3 style="font-size:16px;margin-bottom:14px;">Recent activity</h3>
-        <div class="card" style="overflow:hidden;">
-          <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--border);">
-            <div style="width:34px;height:34px;border-radius:999px;flex-shrink:0;background:#FCF1DE;color:#B7791F;display:flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></div>
-            <div style="flex-grow:1;"><div style="font-size:13px;">New course submitted: &ldquo;Event-Driven Systems Deep Dive&rdquo; by Jordan Blake</div></div>
-            <span style="font-size:12px;color:var(--ink-faint);">12m ago</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--border);">
-            <div style="width:34px;height:34px;border-radius:999px;flex-shrink:0;background:#E7F5EC;color:#1F8A4C;display:flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 3H4a2 2 0 0 0-2 2v3h20V5a2 2 0 0 0-2-2h-2"></path></svg></div>
-            <div style="flex-grow:1;"><div style="font-size:13px;">Payout of $980.00 released to Jordan Blake</div></div>
-            <span style="font-size:12px;color:var(--ink-faint);">1h ago</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--border);">
-            <div style="width:34px;height:34px;border-radius:999px;flex-shrink:0;background:#E7F5EC;color:#1F8A4C;display:flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-            <div style="flex-grow:1;"><div style="font-size:13px;">Course &ldquo;Practical Kubernetes&rdquo; approved and published</div></div>
-            <span style="font-size:12px;color:var(--ink-faint);">3h ago</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--border);">
-            <div style="width:34px;height:34px;border-radius:999px;flex-shrink:0;background:#E3F1FB;color:#3E93C9;display:flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 3H4a2 2 0 0 0-2 2v3h20V5a2 2 0 0 0-2-2h-2"></path></svg></div>
-            <div style="flex-grow:1;"><div style="font-size:13px;">New instructor application: Nina Torres</div></div>
-            <span style="font-size:12px;color:var(--ink-faint);">5h ago</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--border);">
-            <div style="width:34px;height:34px;border-radius:999px;flex-shrink:0;background:#FBEAE6;color:#C4432E;display:flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></div>
-            <div style="flex-grow:1;"><div style="font-size:13px;">Course reported: &ldquo;Advanced SEO Strategy&rdquo; &mdash; misleading claims</div></div>
-            <span style="font-size:12px;color:var(--ink-faint);">1d ago</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;">
-            <div style="width:34px;height:34px;border-radius:999px;flex-shrink:0;background:#E7F5EC;color:#1F8A4C;display:flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 3H4a2 2 0 0 0-2 2v3h20V5a2 2 0 0 0-2-2h-2"></path></svg></div>
-            <div style="flex-grow:1;"><div style="font-size:13px;">Payout of $640.00 released to Priya Nair</div></div>
-            <span style="font-size:12px;color:var(--ink-faint);">2d ago</span>
-          </div>
-        </div>
+        <div class="card" style="overflow:hidden;" data-activity><div class="tcell" style="color:var(--ink-faint);">Loading…</div></div>
       </div>
 
       <!-- COURSES -->
@@ -211,33 +189,53 @@
         </div>
       </div>
 
-      <!-- INSTRUCTORS -->
-      <div data-tab-group="admin" data-tab-panel="instructors" class="hide">
-        <div class="notice" style="margin-bottom:16px;">Sample data — this section isn’t connected to real accounts or payments yet.</div>
-<div class="card" style="overflow:hidden;overflow-x:auto;">
-        <div class="trow" style="grid-template-columns:1.4fr 1.2fr 0.8fr 1fr 0.8fr;background:var(--surface-alt);min-width:680px;">
-          <div class="tcell" style="font-weight:600;color:var(--ink-faint);text-transform:uppercase;font-size:11px;">Instructor</div>
-          <div class="tcell" style="font-weight:600;color:var(--ink-faint);text-transform:uppercase;font-size:11px;">Email</div>
-          <div class="tcell" style="font-weight:600;color:var(--ink-faint);text-transform:uppercase;font-size:11px;">Courses</div>
-          <div class="tcell" style="font-weight:600;color:var(--ink-faint);text-transform:uppercase;font-size:11px;">Revenue</div>
-          <div class="tcell" style="font-weight:600;color:var(--ink-faint);text-transform:uppercase;font-size:11px;">Status</div>
-        </div>
-        <div class="trow" style="grid-template-columns:1.4fr 1.2fr 0.8fr 1fr 0.8fr;min-width:680px;">
-          <div class="tcell" style="font-weight:500;">Jordan Blake</div><div class="tcell" style="color:var(--ink-soft);">jordan@example.com</div><div class="tcell">6</div><div class="tcell">$18,420</div><div class="tcell"><span class="badge badge-success">Active</span></div>
-        </div>
-        <div class="trow" style="grid-template-columns:1.4fr 1.2fr 0.8fr 1fr 0.8fr;min-width:680px;">
-          <div class="tcell" style="font-weight:500;">Maya Chen</div><div class="tcell" style="color:var(--ink-soft);">maya@example.com</div><div class="tcell">9</div><div class="tcell">$41,200</div><div class="tcell"><span class="badge badge-success">Active</span></div>
-        </div>
-        <div class="trow" style="grid-template-columns:1.4fr 1.2fr 0.8fr 1fr 0.8fr;min-width:680px;">
-          <div class="tcell" style="font-weight:500;">Daniel Ortiz</div><div class="tcell" style="color:var(--ink-soft);">daniel@example.com</div><div class="tcell">4</div><div class="tcell">$12,050</div><div class="tcell"><span class="badge badge-success">Active</span></div>
-        </div>
-        <div class="trow" style="grid-template-columns:1.4fr 1.2fr 0.8fr 1fr 0.8fr;min-width:680px;">
-          <div class="tcell" style="font-weight:500;">Nina Torres</div><div class="tcell" style="color:var(--ink-soft);">nina@example.com</div><div class="tcell">2</div><div class="tcell">$3,100</div><div class="tcell"><span class="badge badge-success">Active</span></div>
-        </div>
-        <div class="trow" style="grid-template-columns:1.4fr 1.2fr 0.8fr 1fr 0.8fr;min-width:680px;">
-          <div class="tcell" style="font-weight:500;">Owen Fisk</div><div class="tcell" style="color:var(--ink-soft);">owen@example.com</div><div class="tcell">3</div><div class="tcell">$0</div><div class="tcell"><span class="badge badge-danger">Suspended</span></div>
+      <!-- BUNDLES -->
+      <div data-tab-group="admin" data-tab-panel="bundles" class="hide">
+        <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:start;" class="grid-2">
+          <div class="card admin-table" style="overflow:hidden;">
+            <div class="trow" style="grid-template-columns:2fr 0.7fr 0.9fr 1.2fr;background:var(--surface-alt);">
+              <div class="tcell label-caps">Bundle</div>
+              <div class="tcell label-caps">Price</div>
+              <div class="tcell label-caps">Status</div>
+              <div class="tcell label-caps">Actions</div>
+            </div>
+            <div data-bundle-rows><div class="tcell" style="color:var(--ink-faint);">Loading…</div></div>
+          </div>
+          <form class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px;" data-bundle-form novalidate>
+            <h3 style="font-size:16px;" data-bundle-form-title>Add a bundle</h3>
+            <div><label for="bn-name">Name</label><input id="bn-name" name="name" class="input" type="text" placeholder="e.g. Data Analyst Starter Bundle"></div>
+            <div><label for="bn-desc">Short description</label><input id="bn-desc" name="description" class="input" type="text"></div>
+            <div><label for="bn-price">Bundle price (USD)</label><input id="bn-price" name="price" class="input" type="number" min="0" step="0.01"></div>
+            <div>
+              <label>Courses included</label>
+              <div style="display:flex;flex-direction:column;gap:6px;max-height:240px;overflow:auto;border:1px solid var(--border);border-radius:8px;padding:10px 12px;" data-bundle-courses></div>
+              <div class="field-error" data-error-for="course_ids" style="display:none;"></div>
+              <div style="font-size:12px;color:var(--ink-faint);margin-top:6px;" data-bundle-total></div>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button type="submit" class="btn btn-primary btn-sm" data-bundle-submit>Add bundle</button>
+              <button type="button" class="btn btn-secondary btn-sm hide" data-bundle-cancel>Cancel</button>
+            </div>
+          </form>
         </div>
       </div>
+
+      <!-- REVIEWS -->
+      <div data-tab-group="admin" data-tab-panel="reviews" class="hide">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
+          <p style="font-size:14px;color:var(--ink-soft);">Reviews go live only once approved. Approved reviews replace the manual rating on the course.</p>
+          <div style="display:flex;gap:8px;">
+            <button class="pill active" data-review-filter="pending">Pending</button>
+            <button class="pill" data-review-filter="approved">Approved</button>
+          </div>
+        </div>
+        <div class="card admin-table" style="overflow:hidden;" data-review-rows><div class="tcell" style="color:var(--ink-faint);">Loading…</div></div>
+      </div>
+
+      <!-- INSTRUCTORS (applications) -->
+      <div data-tab-group="admin" data-tab-panel="instructors" class="hide">
+        <p style="font-size:14px;color:var(--ink-soft);margin-bottom:20px;">Applications from the <a href="teach.html" style="color:var(--accent-strong);font-weight:600;">Teach on Coursehub</a> page. Approving is a note for now — instructor accounts come with the next phase.</p>
+        <div class="card admin-table" style="overflow:hidden;" data-application-rows><div class="tcell" style="color:var(--ink-faint);">Loading…</div></div>
       </div>
 
       <!-- LEARNERS -->
@@ -303,28 +301,15 @@
       </div>
       </div>
 
-      <!-- REPORTS -->
+      <!-- REPORTS (catalog analytics) -->
       <div data-tab-group="admin" data-tab-panel="reports" class="hide">
-        <div class="notice" style="margin-bottom:16px;">Sample data — this section isn’t connected to real accounts or payments yet.</div>
-<div style="display:flex;flex-direction:column;gap:12px;" data-report-list>
-        <div class="card" data-report-row style="padding:18px 20px;display:flex;align-items:center;gap:16px;">
-          <div style="width:36px;height:36px;border-radius:999px;background:var(--danger-tint);color:var(--danger);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></div>
-          <div style="flex-grow:1;">
-            <div style="font-size:14px;font-weight:600;">Advanced SEO Strategy</div>
-            <div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Misleading income claims &mdash; reported by a learner · Sep 15, 2026</div>
-          </div>
-          <button class="btn btn-secondary" data-report-resolve>Mark resolved</button>
+        <p style="font-size:14px;color:var(--ink-soft);margin-bottom:20px;">Live numbers from the catalog. Sales and learner analytics arrive with checkout and accounts.</p>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;" class="grid-2" data-reports>
+          <div class="card" style="padding:24px;"><h3 style="font-size:15px;margin-bottom:14px;">Published courses by category</h3><div data-report="by-category"></div></div>
+          <div class="card" style="padding:24px;"><h3 style="font-size:15px;margin-bottom:14px;">Courses by level</h3><div data-report="by-level"></div></div>
+          <div class="card" style="padding:24px;"><h3 style="font-size:15px;margin-bottom:14px;">Price bands</h3><div data-report="by-price"></div></div>
+          <div class="card" style="padding:24px;"><h3 style="font-size:15px;margin-bottom:14px;">Rating distribution (approved reviews)</h3><div data-report="by-rating"></div></div>
         </div>
-        <div class="card" data-report-row style="padding:18px 20px;display:flex;align-items:center;gap:16px;">
-          <div style="width:36px;height:36px;border-radius:999px;background:var(--danger-tint);color:var(--danger);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></div>
-          <div style="flex-grow:1;">
-            <div style="font-size:14px;font-weight:600;">Crypto Trading Signals</div>
-            <div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Off-platform payment request &mdash; reported by a learner · Sep 13, 2026</div>
-          </div>
-          <button class="btn btn-secondary" data-report-resolve>Mark resolved</button>
-        </div>
-        <div class="card hide" data-report-empty style="padding:40px;text-align:center;color:var(--ink-faint);font-size:14px;">No open reports.</div>
-      </div>
       </div>
 
       <!-- SETTINGS -->
@@ -371,36 +356,6 @@
       });
     });
 
-    /* Moderation: expand/collapse + approve/reject removes the row and updates counts */
-    function updatePendingCount() {
-      var remaining = document.querySelectorAll('[data-mod-row]:not(.hide)').length;
-      document.querySelectorAll('[data-pending-count]').forEach(function (el) { el.textContent = remaining; });
-      var badge = document.querySelector('[data-pending-badge]');
-      if (badge) { badge.textContent = remaining; badge.classList.toggle('hide', remaining === 0); }
-      var empty = document.querySelector('[data-mod-empty]');
-      var list = document.querySelector('[data-mod-list]');
-      if (empty && list) {
-        empty.classList.toggle('hide', remaining > 0);
-        list.classList.toggle('hide', remaining === 0);
-      }
-    }
-    document.querySelectorAll('[data-mod-expand]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var row = btn.closest('[data-mod-row]');
-        var detail = row && row.querySelector('[data-mod-detail]');
-        if (!detail) return;
-        var willOpen = detail.classList.contains('hide');
-        detail.classList.toggle('hide');
-        btn.textContent = willOpen ? 'Close' : 'Review';
-      });
-    });
-    document.querySelectorAll('[data-mod-approve], [data-mod-reject]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var row = btn.closest('[data-mod-row]');
-        if (row) row.classList.add('hide');
-        updatePendingCount();
-      });
-    });
 
     /* Payouts: approve marks paid and removes the button */
     document.querySelectorAll('[data-payout-approve]').forEach(function (btn) {
@@ -416,16 +371,6 @@
       });
     });
 
-    /* Reports: resolve removes the row */
-    document.querySelectorAll('[data-report-resolve]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var row = btn.closest('[data-report-row]');
-        if (row) row.remove();
-        var remaining = document.querySelectorAll('[data-report-row]').length;
-        var empty = document.querySelector('[data-report-empty]');
-        if (empty) empty.classList.toggle('hide', remaining > 0);
-      });
-    });
   });
 </script>
 <script src="assets/api.js"></script>

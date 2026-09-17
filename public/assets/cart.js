@@ -12,11 +12,11 @@
 
   var items = H.cart.items();
   list.innerHTML = items.map(function (it, i) {
-    return '<div data-cart-row data-cart-id="' + it.id + '" data-cart-price="' + Number(it.price) + '" style="display:flex;align-items:center;gap:16px;padding:18px 20px;' + (i < items.length - 1 ? "border-bottom:1px solid var(--border);" : "") + '">' +
+    return '<div data-cart-row data-cart-key="' + esc(it.key) + '" data-cart-price="' + Number(it.price) + '" style="display:flex;align-items:center;gap:16px;padding:18px 20px;' + (i < items.length - 1 ? "border-bottom:1px solid var(--border);" : "") + '">' +
       '<div style="width:88px;height:56px;border-radius:8px;flex-shrink:0;background:' + esc(it.icon_bg || "#EDEBFB") + ';"></div>' +
       '<div style="flex-grow:1;min-width:0;">' +
-        '<a href="course-detail.html?id=' + it.id + '" style="font-size:14px;font-weight:600;margin-bottom:3px;display:block;">' + esc(it.title) + "</a>" +
-        '<div style="font-size:12px;color:var(--ink-soft);">' + esc(it.instructor_name) + "</div>" +
+        '<a href="' + esc(it.href) + '" style="font-size:14px;font-weight:600;margin-bottom:3px;display:block;">' + esc(it.title) + (it.kind === "bundle" ? ' <span class="badge badge-accent">Bundle</span>' : "") + "</a>" +
+        '<div style="font-size:12px;color:var(--ink-soft);">' + esc(it.subtitle) + "</div>" +
       "</div>" +
       '<div style="font-size:15px;font-weight:700;">' + H.money(it.price) + "</div>" +
       '<button data-remove-row aria-label="Remove" style="color:var(--ink-faint);padding:6px;">' + X + "</button>" +
@@ -26,21 +26,45 @@
   // script.js hides the row and recalculates; we also forget it in storage
   list.querySelectorAll("[data-remove-row]").forEach(function (btn) {
     btn.addEventListener("click", function () {
-      H.cart.remove(Number(btn.closest("[data-cart-row]").getAttribute("data-cart-id")));
+      H.cart.remove(btn.closest("[data-cart-row]").getAttribute("data-cart-key"));
     });
   });
 
   document.addEventListener("DOMContentLoaded", function () {
     var pay = document.querySelector("[data-pay-total]");
+    var form = document.querySelector("[data-checkout-form]");
     if (!pay) return;
-    var toast = document.createElement("div");
-    toast.className = "toast";
-    toast.textContent = "Checkout isn’t connected to a payment provider yet.";
-    document.body.appendChild(toast);
     pay.addEventListener("click", function () {
-      toast.classList.add("show");
-      clearTimeout(toast._t);
-      toast._t = setTimeout(function () { toast.classList.remove("show"); }, 2600);
+      if (!H.cart.items().length) return H.toast("Your cart is empty.");
+      var cardTab = document.querySelector('[data-tab-group="payment"][data-tab="card"]');
+      if (form && cardTab && cardTab.classList.contains("active")) {
+        var ok = H.validate(form, {
+          "cc-name": H.rules.required("Name on card"),
+          "cc-number": function (v) { return /^\d{13,19}$/.test(v.replace(/\s+/g, "")) ? "" : "Enter a 13\u201319 digit card number."; },
+          "cc-expiry": function (v) {
+            var m = /^(0[1-9]|1[0-2])\s*\/\s*(\d{2})$/.exec(v);
+            if (!m) return "Use MM / YY.";
+            return new Date(2000 + Number(m[2]), Number(m[1]), 1) > new Date() ? "" : "This card has expired.";
+          },
+          "cc-cvc": function (v) { return /^\d{3,4}$/.test(v) ? "" : "3 or 4 digits."; },
+          "cc-postal": H.rules.required("Postal code"),
+        });
+        if (!ok) return;
+      }
+      H.toast("Checkout isn\u2019t connected to a payment provider yet \u2014 nothing was charged.");
     });
+
+    // Promo: only PROMO10 is valid in the prototype (script.js applies the 10%)
+    var promo = document.getElementById("promo");
+    var promoBtn = document.querySelector("[data-promo-apply]");
+    if (promo && promoBtn) {
+      promoBtn.addEventListener("click", function (e) {
+        if (promoBtn.textContent.indexOf("applied") !== -1) return; // removing the code is always fine
+        if (promo.value.trim().toUpperCase() !== "PROMO10") {
+          e.stopImmediatePropagation();
+          H.toast("That code isn\u2019t valid. Try PROMO10.");
+        }
+      }, true);
+    }
   });
 })();

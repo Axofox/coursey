@@ -75,3 +75,40 @@
 .step-dot.is-active{ background:var(--accent); color:#fff; border:none; }
 span[data-step-label]{ color:var(--ink-faint); }
 span[data-step-label].is-active{ color:var(--ink); }
+
+/* ---------- Wishlist heart ---------- */
+.heart{ width:32px; height:32px; border-radius:999px; background:rgba(255,255,255,0.85); color:var(--ink-soft); display:inline-flex; align-items:center; justify-content:center; }
+.heart:hover{ color:var(--accent-strong); }
+.heart.is-active{ color:var(--accent); }
+.heart.is-active svg{ fill:currentColor; }
+
+/* ---------- Form validation ---------- */
+.field-error{ font-size:12px; color:var(--danger); margin-top:6px; }
+[aria-invalid="true"].input{ border-color:var(--danger); }
+
+/* ---------- Notifications panel ---------- */
+.notif-panel{ position:absolute; top:60px; right:16px; width:300px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); box-shadow:var(--shadow-md); display:none; z-index:60; }
+.notif-panel.open{ display:block; }
+.notif-head{ padding:14px 18px; font-weight:600; font-size:14px; border-bottom:1px solid var(--border); }
+.notif-empty{ padding:28px 18px; text-align:center; font-size:14px; font-weight:600; }
+.notif-empty span{ display:block; margin-top:6px; font-size:12px; font-weight:400; color:var(--ink-faint); }
+
+/* ---------- Lesson player ---------- */
+.player{ aspect-ratio:16/9; background:#17171A; border-radius:var(--radius-lg); overflow:hidden; display:flex; align-items:center; justify-content:center; color:#fff; position:relative; }
+.player iframe, .player video{ width:100%; height:100%; border:0; display:block; }
+.player-locked{ text-align:center; padding:32px; max-width:360px; }
+.lesson-list .lesson{ display:flex; align-items:center; gap:10px; padding:10px 14px; font-size:13px; color:var(--ink-soft); border-radius:8px; width:100%; text-align:left; }
+.lesson-list .lesson:hover{ background:var(--surface-alt); }
+.lesson-list .lesson.active{ background:var(--accent-tint); color:var(--accent-strong); font-weight:600; }
+.lesson-list .lesson.done .dot{ background:var(--success); border-color:var(--success); }
+.lesson-list .dot{ width:16px; height:16px; border-radius:999px; border:1.5px solid var(--border-strong); flex-shrink:0; }
+.lesson-list .lesson .len{ margin-left:auto; font-size:12px; color:var(--ink-faint); }
+.lesson-list .section-title{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-faint); padding:16px 14px 6px; }
+@media (max-width:900px){ .lesson-layout{ display:flex !important; flex-direction:column; } }
+
+/* ---------- Analytics bars (admin reports) ---------- */
+.bar-row{ display:grid; grid-template-columns:160px 1fr 56px; gap:12px; align-items:center; font-size:13px; padding:8px 0; }
+.bar-row .progress-track{ height:10px; }
+.bar-row .val{ text-align:right; font-weight:600; }
+@media (max-width:600px){ .bar-row{ grid-template-columns:100px 1fr 48px; } }
+@media (max-width:600px){ .grid-bundle-courses{ grid-template-columns:1fr !important; } }

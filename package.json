@@ -5,7 +5,9 @@
   "description": "Course site — static frontend + Netlify Functions API on Postgres",
   "type": "module",
   "scripts": {
+    "test": "node --test \"test/*.test.mjs\"",
     "dev": "netlify dev",
+    "mock": "node scripts/mock-server.mjs",
     "deploy": "netlify deploy --prod"
   },
   "dependencies": {

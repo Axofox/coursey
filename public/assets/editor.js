@@ -17,15 +17,7 @@
 
   var X = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
 
-  var toast = document.createElement("div");
-  toast.className = "toast";
-  document.body.appendChild(toast);
-  function notify(msg) {
-    toast.textContent = msg;
-    toast.classList.add("show");
-    clearTimeout(toast._t);
-    toast._t = setTimeout(function () { toast.classList.remove("show"); }, 2600);
-  }
+  var notify = H.toast;
   function showError(msg) {
     var el = $("[data-editor-error]");
     el.textContent = msg || "";
@@ -127,10 +119,18 @@
         "</div>" +
         '<div class="body">' +
           s.lessons.map(function (l, li) {
-            return '<div class="lesson-row" data-lesson="' + li + '">' +
-              '<input class="input" type="text" placeholder="Lesson title" value="' + esc(l.title) + '" data-lesson-title>' +
-              '<input class="input duration" type="text" placeholder="m:ss" value="' + esc(l.duration) + '" data-lesson-duration>' +
-              '<button type="button" class="iconbtn" aria-label="Remove lesson" data-remove-lesson>' + X + "</button></div>";
+            return '<div data-lesson="' + li + '" style="border-bottom:1px solid var(--border);padding-bottom:8px;">' +
+              '<div class="lesson-row">' +
+                '<input class="input" type="text" placeholder="Lesson title" value="' + esc(l.title) + '" data-lesson-title>' +
+                '<input class="input duration" type="text" placeholder="m:ss" value="' + esc(l.duration) + '" data-lesson-duration aria-label="Length (m:ss)">' +
+                '<button type="button" class="iconbtn" aria-label="Remove lesson" data-remove-lesson>' + X + "</button>" +
+              "</div>" +
+              '<div class="lesson-row" style="margin-top:6px;">' +
+                '<input class="input" type="url" placeholder="Video link (YouTube, Vimeo or .mp4) \u2014 optional" value="' + esc(l.video_url || "") + '" data-lesson-video style="font-size:13px;height:38px;">' +
+                '<label style="display:flex;align-items:center;gap:6px;margin:0;white-space:nowrap;font-size:12px;"><input type="checkbox" data-lesson-preview' + (l.preview ? " checked" : "") + "> Free preview</label>" +
+              "</div>" +
+              '<div class="field-error" data-lesson-error style="display:none;"></div>' +
+            "</div>";
           }).join("") +
           '<button type="button" class="btn btn-secondary btn-sm" style="align-self:flex-start;margin-top:4px;" data-add-lesson>+ Add lesson</button>' +
         "</div></div>";
@@ -144,7 +144,7 @@
         sections.splice(si, 1); renderSections();
       });
       el.querySelector("[data-add-lesson]").addEventListener("click", function () {
-        sections[si].lessons.push({ title: "", duration: "" });
+        sections[si].lessons.push({ title: "", duration: "", video_url: "", preview: false });
         renderSections();
         var rows = wrap.querySelectorAll('[data-section="' + si + '"] [data-lesson-title]');
         rows[rows.length - 1].focus();
@@ -153,6 +153,8 @@
         var li = Number(row.dataset.lesson);
         row.querySelector("[data-lesson-title]").addEventListener("input", function () { sections[si].lessons[li].title = this.value; });
         row.querySelector("[data-lesson-duration]").addEventListener("input", function () { sections[si].lessons[li].duration = this.value.trim(); });
+        row.querySelector("[data-lesson-video]").addEventListener("input", function () { sections[si].lessons[li].video_url = this.value.trim(); });
+        row.querySelector("[data-lesson-preview]").addEventListener("change", function () { sections[si].lessons[li].preview = this.checked; });
         row.querySelector("[data-remove-lesson]").addEventListener("click", function () { sections[si].lessons.splice(li, 1); renderSections(); });
       });
     });
@@ -223,17 +225,57 @@
     lists.learn = (c.learn || []).slice();
     lists.requirements = (c.requirements || []).slice();
     sections = (c.curriculum || []).map(function (s) {
-      return { title: s.title, lessons: (s.lessons || []).map(function (l) { return { title: l.title, duration: l.duration || "" }; }) };
+      return { title: s.title, lessons: (s.lessons || []).map(function (l) { return { title: l.title, duration: l.duration || "", video_url: l.video_url || "", preview: !!l.preview }; }) };
     });
     renderList("learn"); renderList("requirements"); renderSections(); updateThumb();
+  }
+
+  // Inline validation: returns the first step with a problem, or 0 when clean
+  function validateAll() {
+    var form = $("[data-editor-form]");
+    var basics = H.validate(form, {
+      title: H.rules.required("A course title"),
+      category_id: H.rules.required("A category"),
+    });
+    var pricing = H.validate(form, {
+      price: H.rules.number(0, undefined, "Price"),
+      original_price: function (v) {
+        var base = H.rules.number(0, undefined, "Compare-at price")(v);
+        if (base) return base;
+        return v !== "" && Number(v) <= Number(getField("price") || 0) ? "Compare-at price should be higher than the price." : "";
+      },
+      rating: H.rules.number(0, 5, "Rating"),
+      rating_count: H.rules.number(0, undefined, "Number of ratings"),
+      students: H.rules.number(0, undefined, "Students"),
+      resources: H.rules.number(0, undefined, "Resources"),
+    });
+    var curriculumOk = true;
+    document.querySelectorAll("[data-lesson]").forEach(function (row) {
+      var msgs = [];
+      var d = row.querySelector("[data-lesson-duration]").value.trim();
+      var v = row.querySelector("[data-lesson-video]").value.trim();
+      if (d && !/^\d{1,3}(:[0-5]\d)?$/.test(d)) msgs.push("Length must look like 12:30.");
+      if (v && !/^https?:\/\/\S+$/i.test(v)) msgs.push("Video link must start with http:// or https://.");
+      var slot = row.querySelector("[data-lesson-error]");
+      slot.textContent = msgs.join(" ");
+      slot.style.display = msgs.length ? "" : "none";
+      if (msgs.length) curriculumOk = false;
+    });
+    if (!basics) return 1;
+    if (!curriculumOk) return 2;
+    if (!pricing) return 3;
+    return 0;
   }
 
   var saving = false;
   async function save(published) {
     if (saving) return;
+    var badStep = validateAll();
+    if (badStep) {
+      document.querySelector('[data-step-goto="' + badStep + '"]').click();
+      return showError("Please fix the highlighted field" + (badStep === 2 ? "s in the curriculum" : "") + " (step " + badStep + ").");
+    }
     var data = collect();
-    if (!data.title) return showError("A course title is required (step 1).");
-    if (!data.category_id) return showError("Pick a category (step 1).");
     data.published = published;
     saving = true;
     showError("");

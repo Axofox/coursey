@@ -20,6 +20,7 @@
     return isNaN(d) ? "" : d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
   }
 
+  var courseId = null;
   function sectionHtml(s, i) {
     var t = H.curriculumTotals([s]);
     var open = i === 0;
@@ -32,15 +33,19 @@
         '<span style="font-size:13px;color:var(--ink-faint);">' + t.lessons + " lesson" + (t.lessons === 1 ? "" : "s") + (t.seconds ? " · " + t.label : "") + "</span>" +
       "</button>" +
       '<div data-acc-panel="s' + i + '" class="' + (open ? "" : "hide") + '" style="padding:0 20px 14px 52px;display:flex;flex-direction:column;gap:10px;">' +
-        (s.lessons || []).map(function (l) {
+        (s.lessons || []).map(function (l, li) {
+          var label = LESSON + esc(l.title);
           return '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-            '<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-soft);">' + LESSON + esc(l.title) + "</div>" +
+            (l.preview
+              ? '<a href="lesson.html?course=' + courseId + '&s=' + i + '&l=' + li + '" style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--accent-strong);">' + label + ' <span class="badge badge-accent">Preview</span></a>'
+              : '<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-soft);">' + label + "</div>") +
             '<span style="font-size:12px;color:var(--ink-faint);">' + esc(l.duration) + "</span></div>";
         }).join("") +
       "</div></div>";
   }
 
   function render(c) {
+    courseId = c.id;
     var totals = H.curriculumTotals(c.curriculum);
     var ini = H.initials(c.instructor_name);
     document.title = c.title + " — Coursehub";
@@ -104,15 +109,32 @@
           '<div><div style="font-size:16px;font-weight:600;margin-bottom:2px;">' + esc(c.instructor_name) + "</div>" +
           '<div style="font-size:13px;color:var(--ink-soft);margin-bottom:10px;">' + esc(c.instructor_title) + "</div>" +
           (c.instructor_bio ? '<p style="font-size:14px;color:var(--ink-soft);line-height:1.6;">' + esc(c.instructor_bio) + "</p>" : "") +
-          "</div></div>" : "");
+          "</div></div>" : "") +
+
+      reviewsHtml(c);
+
+    initReviewForm(c);
+
+    var firstPreview = null, firstLesson = null;
+    (c.curriculum || []).forEach(function (sec, si) {
+      (sec.lessons || []).forEach(function (l, li) {
+        if (!firstLesson) firstLesson = { si: si, li: li };
+        if (!firstPreview && l.preview) firstPreview = { si: si, li: li };
+      });
+    });
+    var previewTarget = firstPreview || firstLesson;
+    var previewHref = previewTarget ? "lesson.html?course=" + c.id + "&s=" + previewTarget.si + "&l=" + previewTarget.li : null;
 
     var off = c.original_price && c.original_price > c.price ? Math.round((1 - c.price / c.original_price) * 100) : 0;
-    var inCart = H.cart.has(c.id);
+    var inCart = H.cart.has("course", c.id);
     aside.innerHTML =
       '<div class="card" style="overflow:hidden;box-shadow:var(--shadow-md);">' +
         '<div style="aspect-ratio:16/9;background:' + esc(c.icon_bg) + ';display:flex;align-items:center;justify-content:center;position:relative;">' +
-          '<button aria-label="Play preview" style="width:56px;height:56px;border-radius:999px;background:rgba(255,255,255,0.92);display:flex;align-items:center;justify-content:center;color:var(--accent-strong);">' + PLAY + "</button>" +
-          '<span style="position:absolute;bottom:10px;left:12px;font-size:12px;color:#fff;background:rgba(20,20,20,0.55);padding:3px 8px;border-radius:6px;">Preview this course</span>' +
+          (previewHref
+            ? '<a href="' + previewHref + '" aria-label="Play preview" style="width:56px;height:56px;border-radius:999px;background:rgba(255,255,255,0.92);display:flex;align-items:center;justify-content:center;color:var(--accent-strong);">' + PLAY + "</a>" +
+              '<a href="' + previewHref + '" style="position:absolute;bottom:10px;left:12px;font-size:12px;color:#fff;background:rgba(20,20,20,0.55);padding:3px 8px;border-radius:6px;">Preview this course</a>'
+            : "") +
+          H.heartButton(c.id, "position:absolute;top:10px;right:10px;") +
         "</div>" +
         '<div style="padding:24px;">' +
           '<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:20px;">' +
@@ -146,15 +168,76 @@
 
     var cartBtn = aside.querySelector("[data-cart-toggle]");
     cartBtn.addEventListener("click", function () {
-      if (H.cart.has(c.id)) {
-        H.cart.remove(c.id);
+      if (H.cart.has("course", c.id)) {
+        H.cart.remove("course-" + c.id);
         cartBtn.textContent = "Add to cart"; cartBtn.style.color = ""; cartBtn.style.borderColor = "";
       } else {
-        H.cart.add(c);
+        H.cart.add("course", c);
         cartBtn.textContent = "Added to cart"; cartBtn.style.color = "var(--success)"; cartBtn.style.borderColor = "var(--success)";
       }
     });
-    aside.querySelector("[data-buy-now]").addEventListener("click", function () { H.cart.add(c); });
+    aside.querySelector("[data-buy-now]").addEventListener("click", function () { H.cart.add("course", c); });
+  }
+
+  var AVATARS = [["#E3F1FB", "#3E93C9"], ["#E4F3EA", "#3E9C6B"], ["#FDEEDC", "#C98A3E"], ["#FBE7EC", "#C9698A"], ["#EDEBFB", "#7A6DF0"]];
+  function reviewsHtml(c) {
+    var list = (c.reviews || []).map(function (r, i) {
+      var col = AVATARS[i % AVATARS.length];
+      return '<div style="padding-bottom:18px;border-bottom:1px solid var(--border);">' +
+        '<div style="display:flex;justify-content:space-between;margin-bottom:8px;">' +
+          '<div style="display:flex;align-items:center;gap:10px;">' +
+            '<div style="width:32px;height:32px;border-radius:999px;background:' + col[0] + ";color:" + col[1] + ';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;">' + esc(H.initials(r.name)) + "</div>" +
+            '<span style="font-size:13px;font-weight:600;">' + esc(r.name) + "</span></div>" +
+          H.stars(r.rating) +
+        "</div>" +
+        '<p style="font-size:14px;color:var(--ink-soft);line-height:1.6;">“' + esc(r.body) + "”</p></div>";
+    }).join("");
+    return '<div id="reviews">' +
+      '<h3 style="font-size:18px;margin-bottom:18px;">Student reviews</h3>' +
+      '<div style="display:flex;flex-direction:column;gap:18px;margin-bottom:28px;">' +
+        (list || '<p style="font-size:14px;color:var(--ink-faint);">No reviews yet — be the first.</p>') +
+      "</div>" +
+      '<form class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px;" data-review-form novalidate>' +
+        '<h4 style="font-size:16px;">Leave a review</h4>' +
+        '<div class="notice notice-success hide" data-review-done>Thanks! Your review will appear once it’s been approved.</div>' +
+        '<div class="notice notice-error hide" data-review-error></div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="grid-2">' +
+          '<div><label for="rv-name">Your name</label><input id="rv-name" name="name" class="input" type="text" maxlength="80"></div>' +
+          '<div><label for="rv-rating">Rating</label><select id="rv-rating" name="rating" class="input">' +
+            '<option value="">Choose…</option><option value="5">5 — Excellent</option><option value="4">4 — Good</option><option value="3">3 — Okay</option><option value="2">2 — Poor</option><option value="1">1 — Terrible</option></select></div>' +
+        "</div>" +
+        '<div><label for="rv-body">Review</label><textarea id="rv-body" name="body" class="input" rows="4" maxlength="2000" placeholder="What did you build? What could be better?"></textarea></div>' +
+        '<input type="text" name="website" tabindex="-1" autocomplete="off" class="visually-hidden" aria-hidden="true">' +
+        '<div><button type="submit" class="btn btn-primary btn-sm">Submit review</button></div>' +
+      "</form></div>";
+  }
+
+  function initReviewForm(c) {
+    var form = main.querySelector("[data-review-form]");
+    if (!form) return;
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var errBox = form.querySelector("[data-review-error]");
+      errBox.classList.add("hide");
+      var ok = H.validate(form, {
+        name: H.rules.required("Your name"),
+        rating: H.rules.required("A rating"),
+        body: H.rules.minLength(10, "Your review"),
+      });
+      if (!ok) return;
+      var btn = form.querySelector("[type=submit]");
+      btn.disabled = true;
+      try {
+        await H.api.submitReview({ course_id: c.id, name: form.name.value.trim(), rating: Number(form.rating.value), body: form.body.value.trim(), website: form.website.value });
+        form.reset();
+        form.querySelector("[data-review-done]").classList.remove("hide");
+      } catch (err) {
+        errBox.textContent = err.message;
+        errBox.classList.remove("hide");
+      } finally {
+        btn.disabled = false;
+      }
+    });
   }
 
   function notFound() {

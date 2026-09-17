@@ -9,17 +9,21 @@ Live: https://cupcourse.netlify.app · Repo: https://github.com/Axofox/coursey
 
 | Page | Status |
 |------|--------|
-| `index.html` — home & catalog | **Real.** Categories, featured grid, search (`?q=`), category filter (`?category=`), stats — all from the database. Bundles section is a placeholder ("Coming soon"). |
-| `course-detail.html?id=N` | **Real.** Everything on the page comes from the course record. Add-to-cart works (browser cart). |
-| `cart.html` | **Half.** Shows the real courses you added (stored in this browser) with live totals. "Pay" is not connected to a payment provider. |
-| `admin-dashboard.html` | **Real** for Courses and Categories (sign in with `ADMIN_TOKEN`). Overview, Instructors, Learners, Payments, Reports and Settings show sample data, labelled as such. |
-| `course-upload.html` | **Real.** The 4-step editor creates and edits courses (`?id=N` to edit). Requires the admin token. |
-| `dashboard.html`, `seller-dashboard.html` | **Preview** — need user accounts, which don't exist yet. Banner says so. |
+| `index.html` — home & catalog | **Real.** Categories, featured grid, search (`?q=`), category filter (`?category=`), bundles, stats — all from the database. Wishlist hearts persist in the browser. |
+| `course-detail.html?id=N` | **Real.** Everything comes from the course record, incl. approved reviews. Add-to-cart (browser cart), review form (moderated), "Preview this course" → lesson player. |
+| `bundle.html?id=N` | **Real.** Bundle contents, savings, add-to-cart. |
+| `lesson.html?course=N&s=0&l=0` | **Real.** Video player (YouTube / Vimeo / mp4 links) with curriculum sidebar and local progress. Only lessons flagged *Free preview* (or any lesson of a free course) play until purchases exist. |
+| `teach.html` | **Real.** Instructor application form → admin Instructors tab. |
+| `cart.html` | **Half.** Real courses/bundles from the browser cart, live totals, validated card form. "Pay" is not connected to a payment provider — nothing is charged. |
+| `admin-dashboard.html` | **Real** for Overview, Courses, Categories, Bundles, Reviews (moderation), Instructors (applications) and Reports (catalog analytics). Learners, Payments and Settings show sample data, labelled as such. Sign in with `ADMIN_TOKEN`. |
+| `course-upload.html` | **Real.** 4-step editor with inline validation; lessons can carry a video link and a free-preview flag. `?id=N` edits. |
+| `dashboard.html` | **Preview**, except the Wishlist tab which is real (browser wishlist). |
+| `seller-dashboard.html` | **Preview** — needs instructor accounts. |
+| `404.html` | Served by Netlify for unknown paths. |
 | `design/` | The style guide and mobile reference screens from the handoff, unchanged. |
 
-Next phase, when wanted: user accounts (sign-up/login), Stripe checkout, and
-instructor self-service — the seller dashboard and learner dashboard designs
-are already in place for it.
+Still needs accounts (next phase): sign-up/login/password reset, purchases and
+enrolments, certificates, instructor self-service, real notifications.
 
 ## Layout
 
@@ -34,10 +38,13 @@ public/
     site.css       responsive rules + admin/editor components
     script.js      handoff's interaction layer (theme, tabs, accordions, stepper, cart maths)
     api.js         API client, browser cart, shared render helpers  (window.Coursehub)
-    home.js / course.js / cart.js / admin.js / editor.js   one per page
-netlify/functions/api.mjs   JSON API (Functions v2), routes /api/*
+    home.js / course.js / bundle.js / lesson.js / cart.js / teach.js / dashboard.js / admin.js / editor.js   one per page
+  bundle.html, lesson.html, teach.html, 404.html
+netlify/functions/api.mjs   JSON API (Functions v2), routes /api/*; `createHandler({ query })` for tests
 netlify/lib/db.mjs          Postgres via `pg`, schema + migration + first-run seed
 netlify/lib/seed.mjs        starter content matching the design
+scripts/mock-server.mjs     `npm run mock` — frontend against an in-memory API (token "testtoken")
+test/                       `npm test` — Node's built-in runner; API routing/validation, seed integrity, browser helpers
 netlify.toml                publish dir, bundler, /home.html → / redirect
 ```
 
@@ -47,8 +54,12 @@ netlify.toml                publish dir, bundler, /home.html → / redirect
 - **courses** — `category_id`, `title`, `subtitle`, `description`, `instructor_name/title/bio`,
   `level` (Beginner/Intermediate/Advanced), `language`, `price`, `original_price`, `badge`
   (Bestseller/New/null), `rating`, `rating_count`, `students`, `resources`,
-  `learn[]`, `requirements[]`, `curriculum[{title, lessons[{title, duration "m:ss"}]}]`,
+  `learn[]`, `requirements[]`, `curriculum[{title, lessons[{title, duration "m:ss", video_url, preview}]}]`,
   `featured`, `published`, `updated_at`
+- **bundles** — `name`, `description`, `price`, `course_ids[]`, `published`
+- **reviews** — `course_id`, `name`, `rating` 1–5, `body`, `status` pending/approved. A course with
+  approved reviews shows their average instead of the manual `rating`.
+- **instructor_applications** — `name`, `email`, `expertise`, `bio`, `portfolio_url`, `status` new/approved/rejected
 
 The schema is created on the first request and versioned in a `meta` table.
 Version 1 (the old mockup) is dropped and reseeded automatically.
@@ -56,12 +67,12 @@ Version 1 (the old mockup) is dropped and reseeded automatically.
 ## API
 
 Public: `GET /api/categories`, `GET /api/courses[?category=&q=&featured=1]`,
-`GET /api/courses/:id`, `GET /api/stats`.
+`GET /api/courses/:id`, `GET /api/bundles[/:id]`, `GET /api/stats`,
+`POST /api/reviews`, `POST /api/applications` (both with a honeypot `website` field).
 
-Admin (`Authorization: Bearer <ADMIN_TOKEN>`): `GET /api/auth/check`,
-`GET /api/courses?all=1`, `POST/PUT/DELETE /api/courses[/:id]`,
-`POST/PUT/DELETE /api/categories[/:id]`. Field validation lives in
-`COURSE_FIELDS` in `api.mjs`.
+Admin (`Authorization: Bearer <ADMIN_TOKEN>`): `GET /api/auth/check`, `?all=1` on
+courses/bundles, `POST/PUT/DELETE` on courses, categories, bundles; `GET/PUT/DELETE`
+on reviews and applications. The full route list is at the top of `api.mjs`.
 
 ## Environment variables (Netlify → Site configuration → Environment variables)
 

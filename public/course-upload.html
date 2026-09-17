@@ -59,6 +59,7 @@
 </div>
 
 <main id="main" class="container container--narrow" style="padding-top:40px;padding-bottom:100px;">
+<form novalidate onsubmit="return false" data-editor-form>
 
   <!-- STEPPER -->
   <div style="display:flex;align-items:center;margin-bottom:40px;" class="stepper">
@@ -90,16 +91,16 @@
     <h2 style="font-size:20px;margin-bottom:4px;">Course basics</h2>
     <div>
       <label for="cu-title">Course title</label>
-      <input id="cu-title" class="input" type="text" placeholder="e.g. Building Resilient APIs" data-field="title">
+      <input id="cu-title" class="input" type="text" placeholder="e.g. Building Resilient APIs" name="title" data-field="title">
     </div>
     <div>
       <label for="cu-subtitle">Subtitle</label>
-      <input id="cu-subtitle" class="input" type="text" placeholder="One sentence describing the outcome" data-field="subtitle">
+      <input id="cu-subtitle" class="input" type="text" placeholder="One sentence describing the outcome" name="subtitle" data-field="subtitle">
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="grid-2">
       <div>
         <label for="cu-category">Category</label>
-        <select id="cu-category" class="input" data-field="category_id"></select>
+        <select id="cu-category" class="input" name="category_id" data-field="category_id"></select>
       </div>
       <div>
         <label>Level</label>
@@ -112,16 +113,16 @@
     </div>
     <div>
       <label for="cu-desc">Description</label>
-      <textarea id="cu-desc" class="input" style="height:110px;padding:12px 14px;resize:vertical;" placeholder="What will students learn and build?" data-field="description"></textarea>
+      <textarea id="cu-desc" class="input" style="height:110px;padding:12px 14px;resize:vertical;" placeholder="What will students learn and build?" name="description" data-field="description"></textarea>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="grid-2">
       <div>
         <label for="cu-language">Language</label>
-        <input id="cu-language" class="input" type="text" value="English" data-field="language">
+        <input id="cu-language" class="input" type="text" value="English" name="language" data-field="language">
       </div>
       <div>
         <label for="cu-badge">Badge</label>
-        <select id="cu-badge" class="input" data-field="badge">
+        <select id="cu-badge" class="input" name="badge" data-field="badge">
           <option value="">None</option>
           <option value="Bestseller">Bestseller</option>
           <option value="New">New</option>
@@ -133,16 +134,16 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="grid-2">
       <div>
         <label for="cu-instructor">Name</label>
-        <input id="cu-instructor" class="input" type="text" placeholder="e.g. Maya Chen" data-field="instructor_name">
+        <input id="cu-instructor" class="input" type="text" placeholder="e.g. Maya Chen" name="instructor_name" data-field="instructor_name">
       </div>
       <div>
         <label for="cu-instructor-title">Title</label>
-        <input id="cu-instructor-title" class="input" type="text" placeholder="e.g. Product Designer at Figma" data-field="instructor_title">
+        <input id="cu-instructor-title" class="input" type="text" placeholder="e.g. Product Designer at Figma" name="instructor_title" data-field="instructor_title">
       </div>
     </div>
     <div>
       <label for="cu-instructor-bio">Short bio</label>
-      <textarea id="cu-instructor-bio" class="input" style="height:80px;padding:12px 14px;resize:vertical;" placeholder="A sentence or two about the instructor" data-field="instructor_bio"></textarea>
+      <textarea id="cu-instructor-bio" class="input" style="height:80px;padding:12px 14px;resize:vertical;" placeholder="A sentence or two about the instructor" name="instructor_bio" data-field="instructor_bio"></textarea>
     </div>
     <div>
       <label>Course thumbnail</label>
@@ -182,11 +183,11 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="grid-2">
       <div>
         <label for="cu-price">Price (USD)</label>
-        <input id="cu-price" class="input" type="number" min="0" step="0.01" placeholder="49" data-field="price">
+        <input id="cu-price" class="input" type="number" min="0" step="0.01" placeholder="49" name="price" data-field="price">
       </div>
       <div>
         <label for="cu-original">Compare-at price (optional)</label>
-        <input id="cu-original" class="input" type="number" min="0" step="0.01" placeholder="89" data-field="original_price">
+        <input id="cu-original" class="input" type="number" min="0" step="0.01" placeholder="89" name="original_price" data-field="original_price">
       </div>
     </div>
     <p style="font-size:13px;color:var(--ink-soft);">A compare-at price shows crossed out next to the price with the discount percentage.</p>
@@ -195,19 +196,19 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="grid-2">
       <div>
         <label for="cu-resources">Downloadable resources</label>
-        <input id="cu-resources" class="input" type="number" min="0" step="1" value="0" data-field="resources">
+        <input id="cu-resources" class="input" type="number" min="0" step="1" value="0" name="resources" data-field="resources">
       </div>
       <div>
         <label for="cu-students">Students enrolled</label>
-        <input id="cu-students" class="input" type="number" min="0" step="1" value="0" data-field="students">
+        <input id="cu-students" class="input" type="number" min="0" step="1" value="0" name="students" data-field="students">
       </div>
       <div>
         <label for="cu-rating">Rating (0–5)</label>
-        <input id="cu-rating" class="input" type="number" min="0" max="5" step="0.1" value="0" data-field="rating">
+        <input id="cu-rating" class="input" type="number" min="0" max="5" step="0.1" value="0" name="rating" data-field="rating">
       </div>
       <div>
         <label for="cu-rating-count">Number of ratings</label>
-        <input id="cu-rating-count" class="input" type="number" min="0" step="1" value="0" data-field="rating_count">
+        <input id="cu-rating-count" class="input" type="number" min="0" step="1" value="0" name="rating_count" data-field="rating_count">
       </div>
     </div>
     <p style="font-size:13px;color:var(--ink-soft);">Ratings show as &ldquo;No ratings yet&rdquo; while the count is 0. Real reviews arrive once learners have accounts.</p>
@@ -217,7 +218,7 @@
         <div style="font-size:14px;font-weight:600;">Featured on the homepage</div>
         <div style="font-size:12px;color:var(--ink-soft);margin-top:2px;">Show this course in the &ldquo;Featured courses&rdquo; grid</div>
       </div>
-      <button type="button" class="switch" data-field="featured" aria-pressed="false" aria-label="Featured on the homepage"></button>
+      <button type="button" class="switch" name="featured" data-field="featured" aria-pressed="false" aria-label="Featured on the homepage"></button>
     </div>
   </div>
 
@@ -240,6 +241,7 @@
     <span></span>
     <button type="button" class="btn btn-primary" data-step-next>Continue</button>
   </div>
+</form>
 </main>
 
 </div>

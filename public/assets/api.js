@@ -1,8 +1,8 @@
 /* =========================================================
-   Coursehub — data layer + shared render helpers
+   Coursehub — data layer + shared UI helpers
    Talks to /api (netlify/functions/api.mjs). Reads are public;
    admin writes send the token kept in sessionStorage.
-   The cart lives in localStorage (no accounts yet).
+   Cart and wishlist live in localStorage (no accounts yet).
    ========================================================= */
 window.Coursehub = (function () {
   "use strict";
@@ -10,6 +10,7 @@ window.Coursehub = (function () {
   var API = "/api";
   var TOKEN_KEY = "coursehub-admin-token";
   var CART_KEY = "coursehub-cart";
+  var WISHLIST_KEY = "coursehub-wishlist";
 
   /* ---------- Admin token ---------- */
   function getToken() {
@@ -29,11 +30,18 @@ window.Coursehub = (function () {
     if (token) headers["Authorization"] = "Bearer " + token;
     if (body !== undefined) headers["Content-Type"] = "application/json";
 
-    var res = await fetch(API + path, {
-      method: method,
-      headers: headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-    });
+    var res;
+    try {
+      res = await fetch(API + path, {
+        method: method,
+        headers: headers,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+      });
+    } catch (e) {
+      var offline = new Error("You appear to be offline. Check your connection and try again.");
+      offline.status = 0;
+      throw offline;
+    }
     if (res.status === 204) return null;
     var data = null;
     try { data = await res.json(); } catch (e) {}
@@ -59,7 +67,11 @@ window.Coursehub = (function () {
     categories: function () { return request("GET", "/categories"); },
     courses: function (params) { return request("GET", "/courses" + qs(params)); },
     course: function (id) { return request("GET", "/courses/" + encodeURIComponent(id)); },
+    bundles: function (params) { return request("GET", "/bundles" + qs(params)); },
+    bundle: function (id) { return request("GET", "/bundles/" + encodeURIComponent(id)); },
     stats: function () { return request("GET", "/stats"); },
+    submitReview: function (data) { return request("POST", "/reviews", data); },
+    submitApplication: function (data) { return request("POST", "/applications", data); },
 
     checkToken: function () { return request("GET", "/auth/check"); },
     createCourse: function (data) { return request("POST", "/courses", data); },
@@ -68,30 +80,50 @@ window.Coursehub = (function () {
     createCategory: function (data) { return request("POST", "/categories", data); },
     updateCategory: function (id, data) { return request("PUT", "/categories/" + encodeURIComponent(id), data); },
     deleteCategory: function (id) { return request("DELETE", "/categories/" + encodeURIComponent(id)); },
+    createBundle: function (data) { return request("POST", "/bundles", data); },
+    updateBundle: function (id, data) { return request("PUT", "/bundles/" + id, data); },
+    deleteBundle: function (id) { return request("DELETE", "/bundles/" + id); },
+    reviews: function (status) { return request("GET", "/reviews" + qs({ status: status })); },
+    updateReview: function (id, status) { return request("PUT", "/reviews/" + id, { status: status }); },
+    deleteReview: function (id) { return request("DELETE", "/reviews/" + id); },
+    applications: function () { return request("GET", "/applications"); },
+    updateApplication: function (id, status) { return request("PUT", "/applications/" + id, { status: status }); },
+    deleteApplication: function (id) { return request("DELETE", "/applications/" + id); },
   };
 
-  /* ---------- Cart (localStorage) ---------- */
-  function readCart() {
-    try { return JSON.parse(localStorage.getItem(CART_KEY) || "[]"); } catch (e) { return []; }
+  /* ---------- localStorage lists ---------- */
+  function readList(key) {
+    try { return JSON.parse(localStorage.getItem(key) || "[]"); } catch (e) { return []; }
   }
-  function writeCart(items) {
-    try { localStorage.setItem(CART_KEY, JSON.stringify(items)); } catch (e) {}
-    updateCartBadges();
+  function writeList(key, items) {
+    try { localStorage.setItem(key, JSON.stringify(items)); } catch (e) {}
   }
+
+  /* ---------- Cart: courses and bundles, keyed by "course-1" / "bundle-2" ---------- */
+  function cartKey(kind, id) { return kind + "-" + id; }
+  // Entries without a key come from an older cart format and are dropped
+  function readCart() { return readList(CART_KEY).filter(function (i) { return i && i.key; }); }
   var cart = {
     items: readCart,
-    has: function (id) { return readCart().some(function (i) { return i.id === id; }); },
-    add: function (course) {
+    has: function (kind, id) { return readCart().some(function (i) { return i.key === cartKey(kind, id); }); },
+    add: function (kind, item) {
       var items = readCart();
-      if (items.some(function (i) { return i.id === course.id; })) return;
+      var key = cartKey(kind, item.id);
+      if (items.some(function (i) { return i.key === key; })) return;
       items.push({
-        id: course.id, title: course.title, instructor_name: course.instructor_name,
-        price: course.price, icon_bg: course.icon_bg,
+        key: key, kind: kind, id: item.id, title: item.title, price: item.price,
+        subtitle: kind === "bundle" ? item.courses.length + " courses" : item.instructor_name,
+        icon_bg: kind === "bundle" ? (item.courses[0] || {}).icon_bg : item.icon_bg,
+        href: (kind === "bundle" ? "bundle.html?id=" : "course-detail.html?id=") + item.id,
       });
-      writeCart(items);
+      writeList(CART_KEY, items);
+      updateCartBadges();
     },
-    remove: function (id) { writeCart(readCart().filter(function (i) { return i.id !== id; })); },
-    clear: function () { writeCart([]); },
+    remove: function (key) {
+      writeList(CART_KEY, readCart().filter(function (i) { return i.key !== key; }));
+      updateCartBadges();
+    },
+    clear: function () { writeList(CART_KEY, []); updateCartBadges(); },
   };
   function updateCartBadges() {
     var n = readCart().length;
@@ -101,6 +133,132 @@ window.Coursehub = (function () {
     });
     document.querySelectorAll("[data-cart-link]").forEach(function (el) {
       el.setAttribute("aria-label", "Cart, " + n + " item" + (n === 1 ? "" : "s"));
+    });
+  }
+
+  /* ---------- Wishlist (course ids) ---------- */
+  var wishlist = {
+    ids: function () { return readList(WISHLIST_KEY); },
+    has: function (id) { return readList(WISHLIST_KEY).indexOf(Number(id)) !== -1; },
+    toggle: function (id) {
+      id = Number(id);
+      var ids = readList(WISHLIST_KEY);
+      var i = ids.indexOf(id);
+      if (i === -1) ids.push(id); else ids.splice(i, 1);
+      writeList(WISHLIST_KEY, ids);
+      updateWishlistHearts();
+      return i === -1;
+    },
+  };
+  var HEART = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+  function heartButton(id, extraStyle) {
+    return '<button type="button" class="heart' + (wishlist.has(id) ? " is-active" : "") + '" data-wishlist-toggle data-course-id="' + id + '" aria-label="Save to wishlist" aria-pressed="' + wishlist.has(id) + '" style="' + (extraStyle || "") + '">' + HEART + "</button>";
+  }
+  function updateWishlistHearts() {
+    document.querySelectorAll("[data-wishlist-toggle][data-course-id]").forEach(function (btn) {
+      var on = wishlist.has(btn.getAttribute("data-course-id"));
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", String(on));
+    });
+  }
+  // Delegated so hearts inside freshly rendered cards just work
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-wishlist-toggle]");
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var id = btn.getAttribute("data-course-id");
+    if (id) {
+      var added = wishlist.toggle(id);
+      toast(added ? "Saved to your wishlist." : "Removed from your wishlist.");
+    } else {
+      btn.classList.toggle("is-active"); // design reference pages without a course behind the card
+    }
+  });
+
+  /* ---------- Toast ---------- */
+  var toastEl;
+  function toast(msg) {
+    if (!toastEl) {
+      toastEl = document.createElement("div");
+      toastEl.className = "toast";
+      toastEl.setAttribute("role", "status");
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastEl._t);
+    toastEl._t = setTimeout(function () { toastEl.classList.remove("show"); }, 2600);
+  }
+
+  /* ---------- Form validation ----------
+     validate(form, { fieldName: function (value, form) { return "" | "error text"; } })
+     Shows the message under the field (an element with data-error-for="name",
+     created if missing) and returns true when everything passes. */
+  function validate(form, rules) {
+    var ok = true;
+    var first = null;
+    Object.keys(rules).forEach(function (name) {
+      var field = form.elements[name];
+      if (!field) return;
+      var value = field.type === "checkbox" ? field.checked : String(field.value || "").trim();
+      var msg = rules[name](value, form) || "";
+      var slot = form.querySelector('[data-error-for="' + name + '"]');
+      if (!slot) {
+        slot = document.createElement("div");
+        slot.className = "field-error";
+        slot.setAttribute("data-error-for", name);
+        field.insertAdjacentElement("afterend", slot);
+      }
+      slot.textContent = msg;
+      slot.style.display = msg ? "" : "none";
+      field.setAttribute("aria-invalid", msg ? "true" : "false");
+      if (msg) { ok = false; if (!first) first = field; }
+    });
+    if (first) first.focus();
+    return ok;
+  }
+  var rules = {
+    required: function (label) { return function (v) { return v ? "" : (label || "This field") + " is required."; }; },
+    email: function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? "" : "Enter a valid email address."; },
+    url: function (v) { return !v || /^https?:\/\/\S+$/i.test(v) ? "" : "Links must start with http:// or https://."; },
+    minLength: function (n, label) { return function (v) { return v.length >= n ? "" : (label || "This") + " needs at least " + n + " characters."; }; },
+    number: function (min, max, label) {
+      return function (v) {
+        if (v === "") return "";
+        var n = Number(v);
+        if (!Number.isFinite(n)) return (label || "This") + " must be a number.";
+        if (min !== undefined && n < min) return (label || "This") + " must be at least " + min + ".";
+        if (max !== undefined && n > max) return (label || "This") + " must be at most " + max + ".";
+        return "";
+      };
+    },
+  };
+
+  /* ---------- Notifications panel (empty until accounts exist) ---------- */
+  function initNotifications() {
+    var bell = document.querySelector('.iconbtn[aria-label="Notifications"]');
+    if (!bell) return;
+    var panel = document.createElement("div");
+    panel.className = "notif-panel";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-label", "Notifications");
+    panel.innerHTML = '<div class="notif-head">Notifications</div>' +
+      '<div class="notif-empty">You’re all caught up.<br><span>Course updates and replies will show up here once you have an account.</span></div>';
+    bell.style.position = "relative";
+    bell.setAttribute("aria-expanded", "false");
+    bell.insertAdjacentElement("afterend", panel);
+    bell.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var open = !panel.classList.contains("open");
+      panel.classList.toggle("open", open);
+      bell.setAttribute("aria-expanded", String(open));
+    });
+    document.addEventListener("click", function (e) {
+      if (!panel.contains(e.target)) { panel.classList.remove("open"); bell.setAttribute("aria-expanded", "false"); }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { panel.classList.remove("open"); bell.setAttribute("aria-expanded", "false"); }
     });
   }
 
@@ -121,6 +279,12 @@ window.Coursehub = (function () {
   var STAR = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"></path></svg>';
   var BOOK = '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>';
 
+  function stars(n) {
+    var out = "";
+    for (var i = 1; i <= 5; i++) out += '<span style="' + (i <= Math.round(n) ? "" : "opacity:.25;") + '">' + STAR + "</span>";
+    return '<div class="stars" aria-label="' + Number(n).toFixed(1) + ' out of 5">' + out + "</div>";
+  }
+
   function badgeHtml(badge, extraStyle) {
     if (!badge) return "";
     var style = badge === "New"
@@ -138,11 +302,12 @@ window.Coursehub = (function () {
       '<span style="font-size:12px;color:var(--ink-faint);">(' + num(course.rating_count) + ")</span>";
   }
 
-  // Course card — same markup as the design's featured grid
+  // Course card — same markup as the design's featured grid, plus a wishlist heart
   function courseCard(c) {
-    return '<a href="course-detail.html?id=' + c.id + '" class="card" style="overflow:hidden;display:flex;flex-direction:column;">' +
+    return '<a href="course-detail.html?id=' + c.id + '" class="card course-card" style="overflow:hidden;display:flex;flex-direction:column;">' +
       '<div style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative;background:' + esc(c.icon_bg) + ";color:" + esc(c.icon_color) + ';">' +
         BOOK + badgeHtml(c.badge, "position:absolute;top:12px;left:12px;") +
+        heartButton(c.id, "position:absolute;top:8px;right:8px;") +
       "</div>" +
       '<div style="padding:16px;display:flex;flex-direction:column;gap:8px;flex-grow:1;">' +
         '<div style="font-size:15px;font-weight:600;line-height:1.35;">' + esc(c.title) + "</div>" +
@@ -180,13 +345,18 @@ window.Coursehub = (function () {
     return new URLSearchParams(window.location.search).get(name);
   }
 
-  document.addEventListener("DOMContentLoaded", updateCartBadges);
+  document.addEventListener("DOMContentLoaded", function () {
+    updateCartBadges();
+    updateWishlistHearts();
+    initNotifications();
+  });
 
   return {
-    api: api, cart: cart, getToken: getToken, setToken: setToken,
-    esc: esc, money: money, num: num, initials: initials, STAR: STAR, BOOK: BOOK,
-    badgeHtml: badgeHtml, ratingHtml: ratingHtml, courseCard: courseCard,
+    api: api, cart: cart, wishlist: wishlist, getToken: getToken, setToken: setToken,
+    toast: toast, validate: validate, rules: rules,
+    esc: esc, money: money, num: num, initials: initials, STAR: STAR, stars: stars,
+    badgeHtml: badgeHtml, courseCard: courseCard, heartButton: heartButton,
     durationSeconds: durationSeconds, formatDuration: formatDuration, curriculumTotals: curriculumTotals,
-    getParam: getParam, updateCartBadges: updateCartBadges,
+    getParam: getParam,
   };
 })();
