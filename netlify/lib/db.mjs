@@ -100,10 +100,10 @@ async function seed(p) {
          instructor_bio, level, language, price, original_price, badge, rating, rating_count, students,
          resources, learn, requirements, curriculum, featured, published, sort_order)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,true,$21)`,
-      [c.category_id, c.title, c.subtitle, c.description, c.instructor_name, c.instructor_title,
-       c.instructor_bio, c.level, c.language || "English", c.price, c.original_price ?? null, c.badge ?? null,
-       c.rating, c.rating_count, c.students, c.resources || 0, JSON.stringify(c.learn || []),
-       JSON.stringify(c.requirements || []), JSON.stringify(c.curriculum || []), !!c.featured, i]
+      [c.category_id, c.title, c.subtitle ?? "", c.description ?? "", c.instructor_name ?? "", c.instructor_title ?? "",
+       c.instructor_bio ?? "", c.level ?? "Beginner", c.language ?? "English", c.price ?? 0, c.original_price ?? null, c.badge ?? null,
+       c.rating ?? 0, c.rating_count ?? 0, c.students ?? 0, c.resources ?? 0, JSON.stringify(c.learn ?? []),
+       JSON.stringify(c.requirements ?? []), JSON.stringify(c.curriculum ?? []), !!c.featured, i]
     );
   }
 }
@@ -111,17 +111,27 @@ async function seed(p) {
 async function ensureSchema() {
   if (!schemaReady) {
     schemaReady = (async () => {
-      const p = await getPool();
-      const version = await currentVersion(p);
-      if (version < SCHEMA_VERSION) {
-        if (version === 1) await p.query("DROP TABLE IF EXISTS courses; DROP TABLE IF EXISTS categories;");
-        await p.query(SCHEMA);
-        const { rows } = await p.query("SELECT count(*)::int AS n FROM categories");
-        if (rows[0].n === 0) await seed(p);
-        await p.query(
-          "INSERT INTO meta (key, value) VALUES ('schema_version', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
-          [String(SCHEMA_VERSION)]
-        );
+      const client = await (await getPool()).connect();
+      try {
+        // One transaction, so a failed migration leaves the previous state untouched
+        await client.query("BEGIN");
+        const version = await currentVersion(client);
+        if (version < SCHEMA_VERSION) {
+          if (version === 1) await client.query("DROP TABLE IF EXISTS courses; DROP TABLE IF EXISTS categories;");
+          await client.query(SCHEMA);
+          const { rows } = await client.query("SELECT count(*)::int AS n FROM categories");
+          if (rows[0].n === 0) await seed(client);
+          await client.query(
+            "INSERT INTO meta (key, value) VALUES ('schema_version', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+            [String(SCHEMA_VERSION)]
+          );
+        }
+        await client.query("COMMIT");
+      } catch (e) {
+        await client.query("ROLLBACK").catch(() => {});
+        throw e;
+      } finally {
+        client.release();
       }
     })().catch((e) => {
       schemaReady = null; // let the next request retry
