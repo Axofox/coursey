@@ -6,6 +6,8 @@ export default defineConfig({
   testDir: "./e2e",
   timeout: 20_000,
   fullyParallel: false,
+  workers: 1, // one shared dev server + database; specs reset it between tests
+  workers: 1, // one shared database — specs reset it between tests
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
@@ -18,9 +20,9 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["Pixel 7"] }, testMatch: /e2e[\\/](catalog|course)\.spec\.mjs$/ },
   ],
   webServer: {
-    command: "node scripts/mock-server.mjs",
-    url: "http://localhost:8765/api/stats",
+    command: "TEST_HOOKS=1 node scripts/dev-server.mjs",
+    url: "http://localhost:8765/api/health",
     reuseExistingServer: !process.env.CI,
-    timeout: 15_000,
+    timeout: 60_000,
   },
 });

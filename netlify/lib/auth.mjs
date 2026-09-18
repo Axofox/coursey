@@ -41,7 +41,7 @@ export function passwordProblem(pw) {
   return "";
 }
 
-export const publicUser = (u) => u && ({ id: u.id, email: u.email, name: u.name, role: u.role, created_at: u.created_at });
+export const publicUser = (u) => u && ({ id: u.id, email: u.email, name: u.name, role: u.role, headline: u.headline || "", bio: u.bio || "", created_at: u.created_at });
 
 /* ---------- Sessions ---------- */
 

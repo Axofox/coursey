@@ -23,25 +23,28 @@ step for the frontend, no ORM.
   `data-theme="dark"` from `localStorage` before first paint. Tokens live in
   `styles.css`; dark mode redefines every semantic colour.
 - No inline scripts or `on*=` attributes anywhere — the CSP forbids them.
-- State that must survive a reload but has no account to attach to (cart,
-  wishlist, lesson progress, theme) is `localStorage`. It is per-browser and
-  is **never trusted by the server** — the cart sends nothing to the API today,
-  and when checkout arrives prices are recomputed server-side.
+- Browser-only state (cart, wishlist, theme, anonymous preview progress) is
+  `localStorage`. It is **never trusted by the server** — checkout sends only
+  item ids and prices are recomputed server-side. Signed-in progress lives in
+  the database.
 
 ## API
 
-`netlify/functions/api.mjs` exports `createHandler({ query })`. The default
-export wires it to the real `pg` pool; tests pass a fake or a test database.
+`netlify/functions/api.mjs` exports `createHandler({ query, mailer, stripe })`.
+The default export wires it to the real `pg` pool, Resend and Stripe; tests and
+the dev server pass fakes.
 
 Request flow:
 
 1. Parse `/api/<resource>/<id?>`; unknown resource → 404.
 2. Rate-limit checks (per client IP, sliding 10-minute window, per function
    instance): 20 bad-token attempts, 10 public submissions.
-3. Authorization: `Authorization: Bearer <ADMIN_TOKEN>` compared with
-   `timingSafeEqual`. Public routes are the catalog reads and the two public
-   `POST`s (reviews, applications). Everything else is admin-only. `?all=1`
-   (include drafts) is admin-only too.
+3. Authorization: the `ch_session` cookie resolves to a user (and role);
+   `Authorization: Bearer <ADMIN_TOKEN>` (timing-safe compare) is the
+   break-glass admin. Public: catalog reads, certificate verification,
+   applications, signup/login/forgot/reset. Signed-in: reviews, enrol,
+   progress, checkout, `me/*`. Instructor: own courses. Admin: everything
+   else, incl. `?all=1`.
 4. Body: JSON only, ≤ 64 KB, must be an object.
 5. Validation: `COURSE_FIELDS` / `BUNDLE_FIELDS` map each writable column to a
    parser + error message; `parseFields` returns only the keys present, so
@@ -62,6 +65,10 @@ categories ─┬─< courses ─┬─< reviews (pending | approved)
             │
 bundles ────┴─  course_ids JSONB (resolved to published courses at read time)
 instructor_applications
+users ─┬─< sessions, password_resets
+       ├─< orders ─< enrolments >─ courses      (webhook creates enrolments from paid orders)
+       ├─< lesson_progress, certificates
+       └─  owner of courses (owner_id), author of reviews, applications
 schema_migrations, meta (legacy version marker)
 ```
 
@@ -80,14 +87,14 @@ every section from the record. *Add to cart* writes to `localStorage`;
 `cart.js` renders those rows before `script.js` runs its totals maths.
 
 **Review**
-Anyone posts to `/api/reviews` (honeypot field + rate limit). It is stored as
-`pending`. Admin approves in the Reviews tab (`PUT /api/reviews/:id`), after
+A signed-in learner posts to `/api/reviews` (one per course, rate limited,
+flagged *verified* when enrolled). It is stored as `pending`. Admin approves in the Reviews tab (`PUT /api/reviews/:id`), after
 which it appears on the course page and drives the rating.
 
-**Admin edit**
-`admin.js` / `editor.js` keep the token in `sessionStorage` (tab-scoped) and
-send it as a Bearer header. The editor posts the whole validated course
-object; the server re-validates everything.
+**Admin / instructor edit**
+`admin.js` / `editor.js` use the account session (or the break-glass token
+kept in tab-scoped `sessionStorage`). The editor posts the whole validated
+course object; the server re-validates everything and applies role rules.
 
 **Deploy**
 `git push` → Netlify runs `npm run migrate` (applies any new
@@ -95,10 +102,43 @@ object; the server re-validates everything.
 `public/` and bundles the function. A failed migration fails the build, so the
 previous deploy stays live.
 
+**Sign in**
+`POST /api/auth/login` verifies the scrypt hash, inserts a session row (hash
+of a random token) and sets `ch_session` (httpOnly, SameSite=Lax, Secure on
+https). Every request resolves the cookie to a user in one query. Roles:
+`learner` (default), `instructor` (granted by approving an application or by
+an admin), `admin` (first account, or a signup carrying the break-glass token).
+
+**Buy**
+`POST /api/checkout` with `[ {kind, id} ]` → prices looked up in the DB, an
+`orders` row (pending) is written, a Stripe Checkout Session is created via
+REST with our cents and `client_reference_id = order id` → browser redirects
+to Stripe. Stripe calls `POST /api/stripe/webhook`; the signature is verified
+(HMAC-SHA256 over `t.body`, 5-minute tolerance), the amount must equal the
+order, then the order is marked paid and one `enrolments` row per course is
+inserted (idempotent — retries are harmless). The success page polls
+`GET /api/orders/:id` until it is paid. Free carts skip Stripe entirely.
+
+**Learn**
+`GET /api/courses/:id` for an enrolled user returns every lesson's
+`video_url` plus their progress; otherwise non-preview links come back as
+`"locked"`. `POST /api/progress` records a lesson; when all lessons are done
+a `certificates` row is created and `certificate.html?id=…` verifies it
+publicly.
+
+**Instruct**
+An instructor's `POST/PUT /api/courses` is forced to `owner_id = self`,
+status `draft` or `pending` (never `published`), and cannot set editorial
+fields (featured, badge, manual stats). Admins publish from the review queue;
+the owner gets an email.
+
 ## Security posture (current)
 
-- Single shared `ADMIN_TOKEN` gate — adequate for one operator, **not** for
-  multiple users; individual accounts and roles are the top P0 item.
+- Authentication is first-party (no vendor): scrypt (N=16384) password
+  hashes, session tokens stored hashed, reset tokens hashed + single-use.
+  The `ADMIN_TOKEN` remains as a break-glass and bootstrap mechanism only.
+- Money: the browser never sends a price; Stripe sessions are created from
+  database prices; webhooks are signature- and amount-checked.
 - CSP: `script-src 'self'`, `style-src 'self' 'unsafe-inline'` (the design
   system uses inline styles), frames only from YouTube/Vimeo, `connect-src
   'self'`. Plus HSTS, nosniff, `X-Frame-Options: DENY`, referrer and

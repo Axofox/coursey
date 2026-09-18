@@ -5,7 +5,10 @@
 */
 import { test, describe, before, after } from "node:test";
 import assert from "node:assert/strict";
-import fs from "node:fs/promises";
+import fsp from "node:fs/promises";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import pg from "pg";
 import { migrate } from "../../netlify/lib/migrate.mjs";
 import { createHandler, resetRateLimits } from "../../netlify/functions/api.mjs";
@@ -20,7 +23,7 @@ async function connect() {
   if (process.env.DATABASE_URL) return new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
   const { default: EmbeddedPostgres } = await import("embedded-postgres");
   embedded = new EmbeddedPostgres({
-    databaseDir: new URL("../../node_modules/.cache/coursehub-test-pg/", import.meta.url).pathname,
+    databaseDir: fs.mkdtempSync(path.join(os.tmpdir(), "coursehub-test-pg-")),
     user: "test", password: "test", port: 54329 + Math.floor(Math.random() * 1000), persistent: false,
     onLog: () => {}, onError: () => {},
   });
@@ -83,7 +86,7 @@ describe("migrations", () => {
   test("a database from the pre-migration-file era is adopted without re-running its migrations", async () => {
     await resetDb();
     // Simulate what the old runtime migrator left behind: v2 tables + meta.schema_version = 2, no preview flags
-    await pool.query(await fs.readFile(new URL("../../migrations/001-marketplace.sql", import.meta.url), "utf8"));
+    await pool.query(await fsp.readFile(new URL("../../migrations/001-marketplace.sql", import.meta.url), "utf8"));
     await pool.query("CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL); INSERT INTO meta VALUES ('schema_version', '2')");
     await pool.query("INSERT INTO categories (id, name) VALUES ('design', 'Design')");
     await pool.query("INSERT INTO courses (category_id, title, curriculum) VALUES ('design', 'Legacy', $1)", [JSON.stringify([{ title: "S", lessons: [{ title: "L", duration: "1:00" }] }])]);

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test.beforeEach(async ({ request }) => { await request.post("/api/_reset"); });
+test.beforeEach(async ({ request }) => { await request.post("/__test/reset"); });
 
 test.describe("course, cart, lesson", () => {
   test("course page renders from the record", async ({ page }) => {
@@ -25,31 +25,20 @@ test.describe("course, cart, lesson", () => {
     await expect(page.locator("[data-cart-count]")).toHaveText("0");
   });
 
-  test("checkout validates the card form and never charges", async ({ page }) => {
+  test("checkout asks visitors to sign in and never charges from the browser", async ({ page }) => {
     await page.goto("/course-detail.html?id=1");
     await page.locator("[data-cart-toggle]").click();
     await page.goto("/cart.html");
+    await expect(page.locator("[data-checkout-signin]")).toBeVisible();
     await page.locator("[data-pay-total]").click();
-    await expect(page.locator('[data-error-for="cc-name"]')).toBeVisible();
-    await page.locator("#cc-name").fill("Alex Rivera");
-    await page.locator("#cc-number").fill("4242 4242 4242 4242");
-    await page.locator("#cc-expiry").fill("12 / 39");
-    await page.locator("#cc-cvc").fill("123");
-    await page.locator("#cc-postal").fill("81675");
-    await page.locator("[data-pay-total]").click();
-    await expect(page.locator(".toast")).toContainText("nothing was charged");
+    await expect(page).toHaveURL(/login\.html\?next=cart\.html/);
   });
 
-  test("review form validates then submits as pending", async ({ page }) => {
+  test("review form is gated behind sign-in", async ({ page }) => {
     await page.goto("/course-detail.html?id=3");
-    const form = page.locator("[data-review-form]");
-    await form.locator("button[type=submit]").click();
-    await expect(form.locator('[data-error-for="name"]')).toHaveText("Your name is required.");
-    await form.locator("[name=name]").fill("Ana");
-    await form.locator("[name=rating]").selectOption("5");
-    await form.locator("[name=body]").fill("Really clear and practical, built a case study.");
-    await form.locator("button[type=submit]").click();
-    await expect(form.locator("[data-review-done]")).toBeVisible();
+    await expect(page.locator("[data-review-signin]")).toBeVisible();
+    await expect(page.locator("[data-review-fields]")).toBeHidden();
+    await expect(page.locator("[data-review-signin] a")).toHaveAttribute("href", /login\.html\?next=course-detail/);
   });
 
   test("lesson player gates non-preview lessons and navigates", async ({ page }) => {

@@ -74,6 +74,31 @@ window.Coursehub = (function () {
     submitApplication: function (data) { return request("POST", "/applications", data); },
 
     checkToken: function () { return request("GET", "/auth/check"); },
+    // accounts
+    signup: function (data) { return request("POST", "/auth/signup", data); },
+    login: function (data) { return request("POST", "/auth/login", data); },
+    logout: function () { return request("POST", "/auth/logout", {}); },
+    me: function () { return request("GET", "/auth/me"); },
+    updateMe: function (data) { return request("PUT", "/auth/me", data); },
+    changePassword: function (data) { return request("PUT", "/auth/password", data); },
+    forgot: function (email) { return request("POST", "/auth/forgot", { email: email }); },
+    reset: function (data) { return request("POST", "/auth/reset", data); },
+    // learning
+    myCourses: function () { return request("GET", "/me/courses"); },
+    myOrders: function () { return request("GET", "/me/orders"); },
+    myCertificates: function () { return request("GET", "/me/certificates"); },
+    myInstructor: function () { return request("GET", "/me/instructor"); },
+    myCourseList: function () { return request("GET", "/courses?mine=1"); },
+    myReviews: function () { return request("GET", "/reviews?mine=1"); },
+    enrol: function (courseId) { return request("POST", "/enrol", { course_id: courseId }); },
+    progress: function (courseId, section, lesson) { return request("POST", "/progress", { course_id: courseId, section: section, lesson: lesson }); },
+    certificate: function (id) { return request("GET", "/certificates/" + encodeURIComponent(id)); },
+    order: function (id) { return request("GET", "/orders/" + id); },
+    allOrders: function () { return request("GET", "/orders?all=1"); },
+    checkout: function (items) { return request("POST", "/checkout", { items: items }); },
+    users: function () { return request("GET", "/users"); },
+    updateUser: function (id, role) { return request("PUT", "/users/" + id, { role: role }); },
+    deleteUser: function (id) { return request("DELETE", "/users/" + id); },
     createCourse: function (data) { return request("POST", "/courses", data); },
     updateCourse: function (id, data) { return request("PUT", "/courses/" + id, data); },
     deleteCourse: function (id) { return request("DELETE", "/courses/" + id); },
@@ -111,7 +136,7 @@ window.Coursehub = (function () {
       var key = cartKey(kind, item.id);
       if (items.some(function (i) { return i.key === key; })) return;
       items.push({
-        key: key, kind: kind, id: item.id, title: item.title, price: item.price,
+        key: key, kind: kind, id: item.id, title: item.title || item.name, price: item.price,
         subtitle: kind === "bundle" ? item.courses.length + " courses" : item.instructor_name,
         icon_bg: kind === "bundle" ? (item.courses[0] || {}).icon_bg : item.icon_bg,
         href: (kind === "bundle" ? "bundle.html?id=" : "course-detail.html?id=") + item.id,
@@ -129,7 +154,7 @@ window.Coursehub = (function () {
     var n = readCart().length;
     document.querySelectorAll("[data-cart-badge]").forEach(function (el) {
       el.textContent = n;
-      el.style.display = n ? "" : "none";
+      el.classList.toggle("hide", !n);
     });
     document.querySelectorAll("[data-cart-link]").forEach(function (el) {
       el.setAttribute("aria-label", "Cart, " + n + " item" + (n === 1 ? "" : "s"));
@@ -262,6 +287,59 @@ window.Coursehub = (function () {
     });
   }
 
+  /* ---------- Session ----------
+     session.get() resolves to the signed-in user or null (cached per page). */
+  var sessionPromise = null;
+  var session = {
+    get: function (force) {
+      if (!sessionPromise || force) {
+        sessionPromise = api.me().catch(function () { return null; });
+      }
+      return sessionPromise;
+    },
+    set: function (user) { sessionPromise = Promise.resolve(user); renderAccountMenu(user); },
+    requireLogin: function (next) {
+      location.href = "login.html?next=" + encodeURIComponent(next || (location.pathname.split("/").pop() + location.search));
+    },
+  };
+
+  var ACCOUNT_STYLE = "width:36px;height:36px;border-radius:999px;background:var(--accent-tint);color:var(--accent-strong);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;";
+  function renderAccountMenu(user) {
+    document.querySelectorAll("[data-account-menu]").forEach(function (slot) {
+      if (!user) {
+        slot.innerHTML = '<a class="navlink" href="login.html" style="margin-right:4px;">Sign in</a>' +
+          '<a class="btn btn-primary btn-sm" href="signup.html" style="height:36px;">Sign up</a>';
+        return;
+      }
+      var studio = user.role === "instructor" || user.role === "admin";
+      slot.innerHTML = '<div class="account-menu">' +
+        '<button class="account-avatar" style="' + ACCOUNT_STYLE + '" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu">' + esc(initials(user.name)) + "</button>" +
+        '<div class="account-dropdown" role="menu">' +
+          '<div class="account-head"><div style="font-weight:600;font-size:14px;">' + esc(user.name) + '</div><div style="font-size:12px;color:var(--ink-faint);">' + esc(user.email) + "</div></div>" +
+          '<a role="menuitem" href="dashboard.html">My learning</a>' +
+          '<a role="menuitem" href="dashboard.html?tab=wishlist">Wishlist</a>' +
+          (studio ? '<a role="menuitem" href="seller-dashboard.html">Instructor Studio</a>' : '<a role="menuitem" href="teach.html">Teach on Coursehub</a>') +
+          (user.role === "admin" ? '<a role="menuitem" href="admin-dashboard.html">Platform admin</a>' : "") +
+          '<a role="menuitem" href="dashboard.html?tab=settings">Settings</a>' +
+          '<button role="menuitem" data-signout>Sign out</button>' +
+        "</div></div>";
+      var btn = slot.querySelector(".account-avatar"), menu = slot.querySelector(".account-dropdown");
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var open = !menu.classList.contains("open");
+        menu.classList.toggle("open", open);
+        btn.setAttribute("aria-expanded", String(open));
+      });
+      document.addEventListener("click", function () { menu.classList.remove("open"); btn.setAttribute("aria-expanded", "false"); });
+      slot.querySelector("[data-signout]").addEventListener("click", async function () {
+        try { await api.logout(); } catch (e) {}
+        setToken("");
+        session.set(null);
+        location.href = "index.html";
+      });
+    });
+  }
+
   /* ---------- Render helpers ---------- */
   function esc(s) {
     return String(s == null ? "" : s)
@@ -349,10 +427,11 @@ window.Coursehub = (function () {
     updateCartBadges();
     updateWishlistHearts();
     initNotifications();
+    if (document.querySelector("[data-account-menu]")) session.get().then(renderAccountMenu);
   });
 
   return {
-    api: api, cart: cart, wishlist: wishlist, getToken: getToken, setToken: setToken,
+    api: api, cart: cart, wishlist: wishlist, session: session, getToken: getToken, setToken: setToken,
     toast: toast, validate: validate, rules: rules,
     esc: esc, money: money, num: num, initials: initials, STAR: STAR, stars: stars,
     badgeHtml: badgeHtml, courseCard: courseCard, heartButton: heartButton,

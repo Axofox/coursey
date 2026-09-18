@@ -10,6 +10,8 @@
   .grid-categories{ grid-template-columns:repeat(3, minmax(0,1fr)) !important; }
 }
 @media (max-width:900px){
+  /* Two-column pages stack; every column takes the full width so nothing overflows sideways */
+  main#main.container > *{ width:100%; min-width:0; }
   .nav-links, .nav-teach{ display:none !important; }
   .nav-search{ max-width:none !important; }
   .grid-courses, .grid-bundles{ grid-template-columns:repeat(2, minmax(0,1fr)) !important; }
@@ -19,6 +21,8 @@
 }
 @media (max-width:600px){
   .nav-search, .iconbtn[aria-label="Notifications"]{ display:none; }
+  [data-account-menu] .btn{ display:none; }   /* "Sign in" alone is enough on a phone */
+  [data-account-menu]{ gap:6px; }
   .container{ padding:0 16px; }
   .grid-courses, .grid-bundles{ grid-template-columns:1fr !important; }
   .grid-categories{ grid-template-columns:repeat(2, minmax(0,1fr)) !important; }
@@ -116,3 +120,14 @@ span[data-step-label].is-active{ color:var(--ink); }
 .bar-row .val{ text-align:right; font-weight:600; }
 @media (max-width:600px){ .bar-row{ grid-template-columns:100px 1fr 48px; } }
 @media (max-width:600px){ .grid-bundle-courses{ grid-template-columns:1fr !important; } }
+
+/* ---------- Account menu ---------- */
+[data-account-menu]{ display:flex; align-items:center; gap:10px; }
+.account-menu{ position:relative; }
+.account-avatar{ cursor:pointer; }
+.account-dropdown{ position:absolute; right:0; top:44px; width:220px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); box-shadow:var(--shadow-md); display:none; z-index:60; padding:6px; }
+.account-dropdown.open{ display:block; }
+.account-head{ padding:10px 12px 12px; border-bottom:1px solid var(--border); margin-bottom:6px; }
+.account-dropdown a, .account-dropdown button{ display:block; width:100%; text-align:left; padding:9px 12px; border-radius:8px; font-size:14px; color:var(--ink); }
+.account-dropdown a:hover, .account-dropdown button:hover{ background:var(--surface-alt); }
+.account-dropdown [data-signout]{ color:var(--danger); }

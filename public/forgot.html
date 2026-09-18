@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coursehub — Reset password</title>
+<script src="assets/theme-boot.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<div class="signin-wrap">
+  <form class="card signin-card" data-auth-form="forgot" novalidate>
+    <a href="index.html" style="display:flex;align-items:center;gap:10px;">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="8" style="fill:var(--accent);"></rect><polygon points="11,9 20,14 11,19" style="fill:#fff;"></polygon></svg>
+      <span style="font-family:var(--font-display);font-weight:700;font-size:17px;">Coursehub</span>
+    </a>
+    <div>
+      <h1 style="font-size:22px;margin-bottom:4px;">Forgot your password?</h1>
+      <p style="font-size:13px;color:var(--ink-soft);">Enter your email and we’ll send a link to choose a new one.</p>
+    </div>
+    <div class="notice notice-success hide" data-auth-done></div>
+    <div class="notice notice-error hide" data-auth-error></div>
+    <div><label for="email">Email</label><input id="email" name="email" class="input" type="email" autocomplete="email"></div>
+
+    <button type="submit" class="btn btn-primary btn-block">Send reset link</button>
+    <p style="font-size:13px;color:var(--ink-soft);text-align:center;"><a href="login.html" style="color:var(--accent-strong);font-weight:600;">Back to sign in</a></p>
+  </form>
+</div>
+<script src="assets/api.js"></script>
+<script src="assets/script.js"></script>
+<script src="assets/auth.js"></script>
+</body>
+</html>

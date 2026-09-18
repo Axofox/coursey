@@ -11,7 +11,6 @@
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
-<div class="notice" style="border-radius:0;text-align:center;">Preview — learner accounts aren’t available yet, so this dashboard shows sample data.</div>
 
 <div style="display:flex;" class="dash-shell">
 
@@ -53,10 +52,10 @@
       Browse courses
     </a>
     <div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-top:1px solid var(--border);margin-top:6px;padding-top:16px;">
-      <div style="width:36px;height:36px;border-radius:999px;background:var(--accent-tint);color:var(--accent-strong);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">AR</div>
+      <div style="width:36px;height:36px;border-radius:999px;background:var(--accent-tint);color:var(--accent-strong);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;"><span data-me-initials>…</span></div>
       <div>
-        <div style="font-size:13px;font-weight:600;">Alex Rivera</div>
-        <div style="font-size:12px;color:var(--ink-faint);">Learner</div>
+        <div style="font-size:13px;font-weight:600;"><span data-me-name>…</span></div>
+        <div style="font-size:12px;color:var(--ink-faint);"><span data-me-role>Learner</span></div>
       </div>
     </div>
   </div>
@@ -80,166 +79,34 @@
 
       <!-- OVERVIEW -->
       <div data-tab-group="dashboard" data-tab-panel="overview">
-        <p style="font-size:15px;color:var(--ink-soft);margin-bottom:28px;">Welcome back, Alex. Here&rsquo;s where you left off.</p>
+        <p style="font-size:15px;color:var(--ink-soft);margin-bottom:28px;">Welcome back, <span data-me-first>there</span>. Here&rsquo;s where you left off.</p>
         <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:36px;" class="grid-4">
-          <div class="card" style="padding:20px;"><div style="font-size:26px;font-weight:700;font-family:var(--font-display);">3</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">In progress</div></div>
-          <div class="card" style="padding:20px;"><div style="font-size:26px;font-weight:700;font-family:var(--font-display);">7</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Completed</div></div>
-          <div class="card" style="padding:20px;"><div style="font-size:26px;font-weight:700;font-family:var(--font-display);">5</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Certificates earned</div></div>
-          <div class="card" style="padding:20px;"><div style="font-size:26px;font-weight:700;font-family:var(--font-display);">12</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Day streak</div></div>
+          <div class="card" style="padding:20px;"><div style="font-size:26px;font-weight:700;font-family:var(--font-display);" data-ov="enrolled">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Courses enrolled</div></div>
+          <div class="card" style="padding:20px;"><div style="font-size:26px;font-weight:700;font-family:var(--font-display);" data-ov="lessons">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Lessons completed</div></div>
+          <div class="card" style="padding:20px;"><div style="font-size:26px;font-weight:700;font-family:var(--font-display);" data-ov="certificates">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Certificates</div></div>
+          <div class="card" style="padding:20px;"><div style="font-size:26px;font-weight:700;font-family:var(--font-display);" data-ov="wishlist">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">On your wishlist</div></div>
         </div>
-
         <h3 style="font-size:16px;margin-bottom:16px;">Continue learning</h3>
-        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:36px;" class="grid-3">
-          <div class="card" style="overflow:hidden;">
-            <a href="course-detail.html" style="aspect-ratio:16/9;display:block;background:#EDEBFB;"></a>
-            <div style="padding:16px;">
-              <div style="font-size:13px;font-weight:600;margin-bottom:8px;line-height:1.3;">UX Foundations: Research to Wireframe</div>
-              <div class="progress-track" style="margin-bottom:6px;"><div class="progress-fill" style="width:68%;"></div></div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
-                <span style="font-size:12px;color:var(--ink-faint);">68% complete</span>
-                <a href="course-detail.html" class="btn btn-primary" style="height:32px;padding:0 12px;font-size:12px;">Resume</a>
-              </div>
-            </div>
-          </div>
-          <div class="card" style="overflow:hidden;">
-            <a href="course-detail.html" style="aspect-ratio:16/9;display:block;background:#E3F1FB;"></a>
-            <div style="padding:16px;">
-              <div style="font-size:13px;font-weight:600;margin-bottom:8px;line-height:1.3;">Python for Data Analysis</div>
-              <div class="progress-track" style="margin-bottom:6px;"><div class="progress-fill" style="width:32%;"></div></div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
-                <span style="font-size:12px;color:var(--ink-faint);">32% complete</span>
-                <a href="course-detail.html" class="btn btn-primary" style="height:32px;padding:0 12px;font-size:12px;">Resume</a>
-              </div>
-            </div>
-          </div>
-          <div class="card" style="overflow:hidden;">
-            <a href="course-detail.html" style="aspect-ratio:16/9;display:block;background:#E4F3EA;"></a>
-            <div style="padding:16px;">
-              <div style="font-size:13px;font-weight:600;margin-bottom:8px;line-height:1.3;">The Complete SQL Bootcamp</div>
-              <div class="progress-track" style="margin-bottom:6px;"><div class="progress-fill" style="width:91%;"></div></div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
-                <span style="font-size:12px;color:var(--ink-faint);">91% complete</span>
-                <a href="course-detail.html" class="btn btn-primary" style="height:32px;padding:0 12px;font-size:12px;">Resume</a>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:36px;" class="grid-3" data-continue></div>
       </div>
 
       <!-- MY COURSES -->
       <div data-tab-group="dashboard" data-tab-panel="courses" class="hide">
-        <div style="display:flex;gap:8px;margin-bottom:22px;">
+        <div style="display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;">
           <button class="pill active" data-course-filter="All">All</button>
           <button class="pill" data-course-filter="In progress">In progress</button>
           <button class="pill" data-course-filter="Completed">Completed</button>
           <button class="pill" data-course-filter="Not started">Not started</button>
         </div>
-        <div style="display:flex;flex-direction:column;gap:12px;" data-course-list>
-          <div class="card" data-course-row data-status="In progress" style="padding:14px;display:flex;align-items:center;gap:16px;">
-            <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#EDEBFB;"></a>
-            <div style="flex-grow:1;min-width:0;">
-              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">UX Foundations: Research to Wireframe</div>
-              <div style="font-size:12px;color:var(--ink-soft);margin-bottom:8px;">Maya Chen</div>
-              <div class="progress-track" style="max-width:220px;"><div class="progress-fill" style="width:68%;"></div></div>
-            </div>
-            <span class="badge badge-accent">In progress</span>
-            <a href="course-detail.html" class="btn btn-secondary" style="height:36px;">Continue</a>
-          </div>
-          <div class="card" data-course-row data-status="In progress" style="padding:14px;display:flex;align-items:center;gap:16px;">
-            <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#E3F1FB;"></a>
-            <div style="flex-grow:1;min-width:0;">
-              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Python for Data Analysis</div>
-              <div style="font-size:12px;color:var(--ink-soft);margin-bottom:8px;">Daniel Ortiz</div>
-              <div class="progress-track" style="max-width:220px;"><div class="progress-fill" style="width:32%;"></div></div>
-            </div>
-            <span class="badge badge-accent">In progress</span>
-            <a href="course-detail.html" class="btn btn-secondary" style="height:36px;">Continue</a>
-          </div>
-          <div class="card" data-course-row data-status="Completed" style="padding:14px;display:flex;align-items:center;gap:16px;">
-            <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#E4F3EA;"></a>
-            <div style="flex-grow:1;min-width:0;">
-              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">The Complete SQL Bootcamp</div>
-              <div style="font-size:12px;color:var(--ink-soft);margin-bottom:8px;">Priya Nair</div>
-              <div class="progress-track" style="max-width:220px;"><div class="progress-fill" style="width:100%;"></div></div>
-            </div>
-            <span class="badge badge-success">Completed</span>
-            <a href="course-detail.html" class="btn btn-secondary" style="height:36px;">Review</a>
-          </div>
-          <div class="card" data-course-row data-status="Completed" style="padding:14px;display:flex;align-items:center;gap:16px;">
-            <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#FBE7EC;"></a>
-            <div style="flex-grow:1;min-width:0;">
-              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Brand Strategy &amp; Positioning</div>
-              <div style="font-size:12px;color:var(--ink-soft);margin-bottom:8px;">Owen Fisk</div>
-              <div class="progress-track" style="max-width:220px;"><div class="progress-fill" style="width:100%;"></div></div>
-            </div>
-            <span class="badge badge-success">Completed</span>
-            <a href="course-detail.html" class="btn btn-secondary" style="height:36px;">Review</a>
-          </div>
-          <div class="card" data-course-row data-status="Not started" style="padding:14px;display:flex;align-items:center;gap:16px;">
-            <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#FFF6DD;"></a>
-            <div style="flex-grow:1;min-width:0;">
-              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Advanced Excel for Finance</div>
-              <div style="font-size:12px;color:var(--ink-soft);margin-bottom:8px;">Tom Reilly</div>
-              <div class="progress-track" style="max-width:220px;"><div class="progress-fill" style="width:0%;"></div></div>
-            </div>
-            <span class="badge badge-neutral">Not started</span>
-            <a href="course-detail.html" class="btn btn-secondary" style="height:36px;">Start</a>
-          </div>
-          <div class="card" data-course-row data-status="Not started" style="padding:14px;display:flex;align-items:center;gap:16px;">
-            <a href="course-detail.html" style="width:96px;height:60px;border-radius:8px;flex-shrink:0;background:#E3F1FB;"></a>
-            <div style="flex-grow:1;min-width:0;">
-              <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Intro to Machine Learning</div>
-              <div style="font-size:12px;color:var(--ink-soft);margin-bottom:8px;">Daniel Ortiz</div>
-              <div class="progress-track" style="max-width:220px;"><div class="progress-fill" style="width:0%;"></div></div>
-            </div>
-            <span class="badge badge-neutral">Not started</span>
-            <a href="course-detail.html" class="btn btn-secondary" style="height:36px;">Start</a>
-          </div>
-        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;" data-course-list></div>
+        <div class="card hide" data-course-empty style="padding:40px;text-align:center;color:var(--ink-faint);font-size:14px;">Nothing here yet. <a href="index.html#catalog" style="color:var(--accent-strong);font-weight:600;">Browse courses</a></div>
       </div>
 
-      <!-- CERTIFICATES & AWARDS -->
+      <!-- CERTIFICATES -->
       <div data-tab-group="dashboard" data-tab-panel="awards" class="hide">
         <h3 style="font-size:16px;margin-bottom:16px;">Certificates</h3>
-        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:40px;" class="grid-3">
-          <div class="card" style="padding:22px;">
-            <div style="width:40px;height:40px;border-radius:10px;background:var(--amber-tint);color:var(--amber);display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div>
-            <div style="font-size:14px;font-weight:600;margin-bottom:4px;">The Complete SQL Bootcamp</div>
-            <div style="font-size:12px;color:var(--ink-faint);margin-bottom:14px;">Completed Aug 14, 2026</div>
-            <button class="btn btn-secondary btn-block" style="height:36px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              Download
-            </button>
-          </div>
-          <div class="card" style="padding:22px;">
-            <div style="width:40px;height:40px;border-radius:10px;background:var(--amber-tint);color:var(--amber);display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div>
-            <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Brand Strategy &amp; Positioning</div>
-            <div style="font-size:12px;color:var(--ink-faint);margin-bottom:14px;">Completed Jul 2, 2026</div>
-            <button class="btn btn-secondary btn-block" style="height:36px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              Download
-            </button>
-          </div>
-          <div class="card" style="padding:22px;">
-            <div style="width:40px;height:40px;border-radius:10px;background:var(--amber-tint);color:var(--amber);display:flex;align-items:center;justify-content:center;margin-bottom:14px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div>
-            <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Intro to Wireframing</div>
-            <div style="font-size:12px;color:var(--ink-faint);margin-bottom:14px;">Completed May 20, 2026</div>
-            <button class="btn btn-secondary btn-block" style="height:36px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              Download
-            </button>
-          </div>
-        </div>
-
-        <h3 style="font-size:16px;margin-bottom:16px;">Achievements</h3>
-        <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px;" class="grid-6">
-          <div style="text-align:center;"><div style="width:64px;height:64px;border-radius:999px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:#FCF1DE;color:#B7791F;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div><div style="font-size:12px;font-weight:600;line-height:1.3;">First Course</div></div>
-          <div style="text-align:center;"><div style="width:64px;height:64px;border-radius:999px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:#FCF1DE;color:#B7791F;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div><div style="font-size:12px;font-weight:600;line-height:1.3;">7-Day Streak</div></div>
-          <div style="text-align:center;"><div style="width:64px;height:64px;border-radius:999px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:#FCF1DE;color:#B7791F;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div><div style="font-size:12px;font-weight:600;line-height:1.3;">5 Completed</div></div>
-          <div style="text-align:center;"><div style="width:64px;height:64px;border-radius:999px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:#FCF1DE;color:#B7791F;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div><div style="font-size:12px;font-weight:600;line-height:1.3;">Top Reviewer</div></div>
-          <div style="text-align:center;opacity:0.4;"><div style="width:64px;height:64px;border-radius:999px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:#F3F2EF;color:#8B8B92;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div><div style="font-size:12px;font-weight:600;line-height:1.3;">30-Day Streak</div></div>
-          <div style="text-align:center;opacity:0.4;"><div style="width:64px;height:64px;border-radius:999px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:#F3F2EF;color:#8B8B92;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"></circle><path d="M8.5 13.5L7 22l5-3 5 3-1.5-8.5"></path></svg></div><div style="font-size:12px;font-weight:600;line-height:1.3;">Early Adopter</div></div>
-        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:40px;" class="grid-3" data-certificates></div>
+        <div class="card hide" data-certificates-empty style="padding:40px;text-align:center;color:var(--ink-faint);font-size:14px;">Finish every lesson of a course and your certificate appears here.</div>
       </div>
 
       <!-- WISHLIST -->
@@ -250,42 +117,31 @@
       <!-- PURCHASE HISTORY -->
       <div data-tab-group="dashboard" data-tab-panel="history" class="hide card" style="overflow:hidden;">
         <div style="display:grid;grid-template-columns:110px 1fr 90px 100px 90px;padding:14px 20px;font-size:12px;font-weight:600;color:var(--ink-faint);text-transform:uppercase;letter-spacing:0.03em;border-bottom:1px solid var(--border);" class="history-row">
-          <span>Date</span><span>Item</span><span>Amount</span><span>Status</span><span>Receipt</span>
+          <span>Date</span><span>Items</span><span>Amount</span><span>Status</span><span>Order</span>
         </div>
-        <div style="display:grid;grid-template-columns:110px 1fr 90px 100px 90px;padding:16px 20px;font-size:13px;border-bottom:1px solid var(--border);align-items:center;" class="history-row">
-          <span style="color:var(--ink-soft);">Aug 14, 2026</span><span style="font-weight:500;">The Complete SQL Bootcamp</span><span>$44</span><span class="badge badge-success" style="width:fit-content;">Paid</span><a href="#" style="color:var(--accent-strong);font-weight:600;">View</a>
-        </div>
-        <div style="display:grid;grid-template-columns:110px 1fr 90px 100px 90px;padding:16px 20px;font-size:13px;border-bottom:1px solid var(--border);align-items:center;" class="history-row">
-          <span style="color:var(--ink-soft);">Jul 2, 2026</span><span style="font-weight:500;">Brand Strategy &amp; Positioning</span><span>$59</span><span class="badge badge-success" style="width:fit-content;">Paid</span><a href="#" style="color:var(--accent-strong);font-weight:600;">View</a>
-        </div>
-        <div style="display:grid;grid-template-columns:110px 1fr 90px 100px 90px;padding:16px 20px;font-size:13px;border-bottom:1px solid var(--border);align-items:center;" class="history-row">
-          <span style="color:var(--ink-soft);">Jun 18, 2026</span><span style="font-weight:500;">Product Design Career Path (bundle)</span><span>$179</span><span class="badge badge-success" style="width:fit-content;">Paid</span><a href="#" style="color:var(--accent-strong);font-weight:600;">View</a>
-        </div>
-        <div style="display:grid;grid-template-columns:110px 1fr 90px 100px 90px;padding:16px 20px;font-size:13px;border-bottom:1px solid var(--border);align-items:center;" class="history-row">
-          <span style="color:var(--ink-soft);">May 20, 2026</span><span style="font-weight:500;">Intro to Wireframing</span><span>$39</span><span class="badge badge-success" style="width:fit-content;">Paid</span><a href="#" style="color:var(--accent-strong);font-weight:600;">View</a>
-        </div>
-        <div style="display:grid;grid-template-columns:110px 1fr 90px 100px 90px;padding:16px 20px;font-size:13px;align-items:center;" class="history-row">
-          <span style="color:var(--ink-soft);">Apr 3, 2026</span><span style="font-weight:500;">Advanced Excel for Finance</span><span>$39</span><span class="badge badge-success" style="width:fit-content;">Paid</span><a href="#" style="color:var(--accent-strong);font-weight:600;">View</a>
-        </div>
+        <div data-orders></div>
       </div>
 
       <!-- SETTINGS -->
-      <div data-tab-group="dashboard" data-tab-panel="settings" class="hide card" style="padding:28px;max-width:480px;display:flex;flex-direction:column;gap:18px;">
-        <div>
-          <label for="set-name">Full name</label>
-          <input id="set-name" class="input" type="text" value="Alex Rivera">
-        </div>
-        <div>
-          <label for="set-email">Email</label>
-          <input id="set-email" class="input" type="email" value="alex.rivera@example.com">
-        </div>
-        <div>
-          <label>Password</label>
-          <button class="btn btn-secondary">Change password</button>
-        </div>
-        <div style="display:flex;justify-content:flex-end;border-top:1px solid var(--border);padding-top:18px;margin-top:4px;">
-          <button class="btn btn-primary">Save changes</button>
-        </div>
+      <div data-tab-group="dashboard" data-tab-panel="settings" class="hide" style="display:flex;flex-direction:column;gap:24px;max-width:480px;">
+        <form class="card" style="padding:28px;display:flex;flex-direction:column;gap:18px;" data-profile-form novalidate>
+          <h3 style="font-size:16px;">Profile</h3>
+          <div class="notice notice-error hide" data-profile-error></div>
+          <div><label for="set-name">Full name</label><input id="set-name" name="name" class="input" type="text" maxlength="120"></div>
+          <div><label for="set-email">Email</label><input id="set-email" class="input" type="email" disabled></div>
+          <div style="display:flex;justify-content:flex-end;border-top:1px solid var(--border);padding-top:18px;margin-top:4px;">
+            <button type="submit" class="btn btn-primary">Save changes</button>
+          </div>
+        </form>
+        <form class="card" style="padding:28px;display:flex;flex-direction:column;gap:18px;" data-password-form novalidate>
+          <h3 style="font-size:16px;">Change password</h3>
+          <div class="notice notice-error hide" data-password-error></div>
+          <div><label for="pw-current">Current password</label><input id="pw-current" name="current" class="input" type="password" autocomplete="current-password"></div>
+          <div><label for="pw-new">New password</label><input id="pw-new" name="password" class="input" type="password" autocomplete="new-password"></div>
+          <div style="display:flex;justify-content:flex-end;border-top:1px solid var(--border);padding-top:18px;margin-top:4px;">
+            <button type="submit" class="btn btn-secondary">Update password</button>
+          </div>
+        </form>
       </div>
 
     </main>

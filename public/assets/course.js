@@ -20,7 +20,7 @@
     return isNaN(d) ? "" : d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
   }
 
-  var courseId = null;
+  var courseId = null, enrolledView = false;
   function sectionHtml(s, i) {
     var t = H.curriculumTotals([s]);
     var open = i === 0;
@@ -36,8 +36,8 @@
         (s.lessons || []).map(function (l, li) {
           var label = LESSON + esc(l.title);
           return '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-            (l.preview
-              ? '<a href="lesson.html?course=' + courseId + '&s=' + i + '&l=' + li + '" style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--accent-strong);">' + label + ' <span class="badge badge-accent">Preview</span></a>'
+            (l.preview || enrolledView
+              ? '<a href="lesson.html?course=' + courseId + '&s=' + i + '&l=' + li + '" style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--accent-strong);">' + label + (l.preview && !enrolledView ? ' <span class="badge badge-accent">Preview</span>' : "") + "</a>"
               : '<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-soft);">' + label + "</div>") +
             '<span style="font-size:12px;color:var(--ink-faint);">' + esc(l.duration) + "</span></div>";
         }).join("") +
@@ -46,6 +46,7 @@
 
   function render(c) {
     courseId = c.id;
+    enrolledView = !!(c.enrolled || c.can_manage || c.price === 0);
     var totals = H.curriculumTotals(c.curriculum);
     var ini = H.initials(c.instructor_name);
     document.title = c.title + " — Coursehub";
@@ -57,7 +58,8 @@
     main.innerHTML =
       '<div style="display:flex;gap:8px;margin-bottom:16px;">' + H.badgeHtml(c.badge) +
         '<span class="badge" style="background:var(--surface-alt);color:var(--ink-soft);">' + esc(c.level) + "</span>" +
-        (c.published ? "" : '<span class="badge badge-danger">Draft — not visible to learners</span>') +
+        (c.status === "published" ? "" : c.status === "pending" ? '<span class="badge badge-amber">Awaiting review</span>' : '<span class="badge badge-danger">Draft — not visible to learners</span>') +
+        (c.enrolled ? '<span class="badge badge-success">Enrolled</span>' : "") +
       "</div>" +
       '<h1 style="font-size:32px;line-height:1.2;margin-bottom:12px;">' + esc(c.title) + "</h1>" +
       (c.subtitle ? '<p style="font-size:16px;color:var(--ink-soft);line-height:1.6;margin-bottom:16px;">' + esc(c.subtitle) + "</p>" : "") +
@@ -142,8 +144,13 @@
             (off ? '<span style="font-size:15px;color:var(--ink-faint);text-decoration:line-through;">' + money(c.original_price) + "</span>" +
                    '<span class="badge" style="background:var(--danger-tint);color:var(--danger);">' + off + "% off</span>" : "") +
           "</div>" +
-          '<button class="btn btn-secondary btn-block" style="margin-bottom:10px;' + (inCart ? "color:var(--success);border-color:var(--success);" : "") + '" data-cart-toggle>' + (inCart ? "Added to cart" : "Add to cart") + "</button>" +
-          '<a href="cart.html" class="btn btn-primary btn-block" style="margin-bottom:20px;" data-buy-now>Buy now</a>' +
+          (c.enrolled
+            ? '<a href="' + (previewHref || "lesson.html?course=" + c.id) + '" class="btn btn-primary btn-block" style="margin-bottom:20px;">' + (c.progress && c.progress.length ? "Continue learning" : "Start learning") + "</a>"
+            : c.price === 0
+              ? '<button class="btn btn-primary btn-block" style="margin-bottom:20px;" data-enrol-free>Enrol for free</button>'
+              : '<button class="btn btn-secondary btn-block" style="margin-bottom:10px;' + (inCart ? "color:var(--success);border-color:var(--success);" : "") + '" data-cart-toggle>' + (inCart ? "Added to cart" : "Add to cart") + "</button>" +
+                '<a href="cart.html" class="btn btn-primary btn-block" style="margin-bottom:20px;" data-buy-now>Buy now</a>') +
+          (c.can_manage ? '<a href="course-upload.html?id=' + c.id + '" class="btn btn-secondary btn-block btn-sm" style="margin-bottom:16px;">Edit course</a>' : "") +
           '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-soft);margin-bottom:20px;">' + LOCK + " 30-day money-back guarantee</div>" +
           '<div style="border-top:1px solid var(--border);padding-top:18px;display:flex;flex-direction:column;gap:10px;">' +
             '<div style="font-size:13px;font-weight:600;margin-bottom:2px;">This course includes:</div>' +
@@ -166,8 +173,16 @@
       });
     });
 
+    var enrolBtn = aside.querySelector("[data-enrol-free]");
+    if (enrolBtn) enrolBtn.addEventListener("click", async function () {
+      var user = await H.session.get();
+      if (!user) return H.session.requireLogin();
+      enrolBtn.disabled = true;
+      try { await H.api.enrol(c.id); H.toast("You’re enrolled!"); location.href = "lesson.html?course=" + c.id; }
+      catch (e) { H.toast(e.message); enrolBtn.disabled = false; }
+    });
     var cartBtn = aside.querySelector("[data-cart-toggle]");
-    cartBtn.addEventListener("click", function () {
+    if (cartBtn) cartBtn.addEventListener("click", function () {
       if (H.cart.has("course", c.id)) {
         H.cart.remove("course-" + c.id);
         cartBtn.textContent = "Add to cart"; cartBtn.style.color = ""; cartBtn.style.borderColor = "";
@@ -176,7 +191,8 @@
         cartBtn.textContent = "Added to cart"; cartBtn.style.color = "var(--success)"; cartBtn.style.borderColor = "var(--success)";
       }
     });
-    aside.querySelector("[data-buy-now]").addEventListener("click", function () { H.cart.add("course", c); });
+    var buy = aside.querySelector("[data-buy-now]");
+    if (buy) buy.addEventListener("click", function () { H.cart.add("course", c); });
   }
 
   var AVATARS = [["#E3F1FB", "#3E93C9"], ["#E4F3EA", "#3E9C6B"], ["#FDEEDC", "#C98A3E"], ["#FBE7EC", "#C9698A"], ["#EDEBFB", "#7A6DF0"]];
@@ -187,7 +203,8 @@
         '<div style="display:flex;justify-content:space-between;margin-bottom:8px;">' +
           '<div style="display:flex;align-items:center;gap:10px;">' +
             '<div style="width:32px;height:32px;border-radius:999px;background:' + col[0] + ";color:" + col[1] + ';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;">' + esc(H.initials(r.name)) + "</div>" +
-            '<span style="font-size:13px;font-weight:600;">' + esc(r.name) + "</span></div>" +
+            '<span style="font-size:13px;font-weight:600;">' + esc(r.name) + "</span>" +
+            (r.verified ? '<span class="badge badge-success">Enrolled</span>' : "") + "</div>" +
           H.stars(r.rating) +
         "</div>" +
         '<p style="font-size:14px;color:var(--ink-soft);line-height:1.6;">“' + esc(r.body) + "”</p></div>";
@@ -201,26 +218,28 @@
         '<h4 style="font-size:16px;">Leave a review</h4>' +
         '<div class="notice notice-success hide" data-review-done>Thanks! Your review will appear once it’s been approved.</div>' +
         '<div class="notice notice-error hide" data-review-error></div>' +
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="grid-2">' +
-          '<div><label for="rv-name">Your name</label><input id="rv-name" name="name" class="input" type="text" maxlength="80"></div>' +
-          '<div><label for="rv-rating">Rating</label><select id="rv-rating" name="rating" class="input">' +
+        '<div data-review-signin class="hide" style="font-size:14px;color:var(--ink-soft);"><a href="login.html?next=course-detail.html%3Fid%3D' + c.id + '" style="color:var(--accent-strong);font-weight:600;">Sign in</a> to leave a review.</div>' +
+        '<div data-review-fields style="display:flex;flex-direction:column;gap:16px;">' +
+          '<div><label for="rv-rating">Rating</label><select id="rv-rating" name="rating" class="input" style="max-width:260px;">' +
             '<option value="">Choose…</option><option value="5">5 — Excellent</option><option value="4">4 — Good</option><option value="3">3 — Okay</option><option value="2">2 — Poor</option><option value="1">1 — Terrible</option></select></div>' +
+          '<div><label for="rv-body">Review</label><textarea id="rv-body" name="body" class="input" rows="4" maxlength="2000" placeholder="What did you build? What could be better?"></textarea></div>' +
+          '<div><button type="submit" class="btn btn-primary btn-sm">Submit review</button></div>' +
         "</div>" +
-        '<div><label for="rv-body">Review</label><textarea id="rv-body" name="body" class="input" rows="4" maxlength="2000" placeholder="What did you build? What could be better?"></textarea></div>' +
-        '<input type="text" name="website" tabindex="-1" autocomplete="off" class="visually-hidden" aria-hidden="true">' +
-        '<div><button type="submit" class="btn btn-primary btn-sm">Submit review</button></div>' +
       "</form></div>";
   }
 
   function initReviewForm(c) {
     var form = main.querySelector("[data-review-form]");
     if (!form) return;
+    H.session.get().then(function (u) {
+      form.querySelector("[data-review-signin]").classList.toggle("hide", !!u);
+      form.querySelector("[data-review-fields]").classList.toggle("hide", !u);
+    });
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
       var errBox = form.querySelector("[data-review-error]");
       errBox.classList.add("hide");
       var ok = H.validate(form, {
-        name: H.rules.required("Your name"),
         rating: H.rules.required("A rating"),
         body: H.rules.minLength(10, "Your review"),
       });
@@ -228,7 +247,7 @@
       var btn = form.querySelector("[type=submit]");
       btn.disabled = true;
       try {
-        await H.api.submitReview({ course_id: c.id, name: form.name.value.trim(), rating: Number(form.rating.value), body: form.body.value.trim(), website: form.website.value });
+        await H.api.submitReview({ course_id: c.id, rating: Number(form.rating.value), body: form.body.value.trim() });
         form.reset();
         form.querySelector("[data-review-done]").classList.remove("hide");
       } catch (err) {

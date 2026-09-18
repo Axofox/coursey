@@ -30,42 +30,32 @@
     });
   });
 
-  document.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener("DOMContentLoaded", async function () {
     var pay = document.querySelector("[data-pay-total]");
-    var form = document.querySelector("[data-checkout-form]");
-    if (form) form.addEventListener("submit", function (e) { e.preventDefault(); });
     if (!pay) return;
-    pay.addEventListener("click", function () {
-      if (!H.cart.items().length) return H.toast("Your cart is empty.");
-      var cardTab = document.querySelector('[data-tab-group="payment"][data-tab="card"]');
-      if (form && cardTab && cardTab.classList.contains("active")) {
-        var ok = H.validate(form, {
-          "cc-name": H.rules.required("Name on card"),
-          "cc-number": function (v) { return /^\d{13,19}$/.test(v.replace(/\s+/g, "")) ? "" : "Enter a 13\u201319 digit card number."; },
-          "cc-expiry": function (v) {
-            var m = /^(0[1-9]|1[0-2])\s*\/\s*(\d{2})$/.exec(v);
-            if (!m) return "Use MM / YY.";
-            return new Date(2000 + Number(m[2]), Number(m[1]), 1) > new Date() ? "" : "This card has expired.";
-          },
-          "cc-cvc": function (v) { return /^\d{3,4}$/.test(v) ? "" : "3 or 4 digits."; },
-          "cc-postal": H.rules.required("Postal code"),
-        });
-        if (!ok) return;
-      }
-      H.toast("Checkout isn\u2019t connected to a payment provider yet \u2014 nothing was charged.");
-    });
+    var signin = document.querySelector("[data-checkout-signin]");
+    var errBox = document.querySelector("[data-checkout-error]");
+    if (H.getParam("cancelled")) H.toast("Checkout cancelled — your cart is still here.");
+    var user = await H.session.get();
+    if (!user) signin.classList.remove("hide");
 
-    // Promo: only PROMO10 is valid in the prototype (script.js applies the 10%)
-    var promo = document.getElementById("promo");
-    var promoBtn = document.querySelector("[data-promo-apply]");
-    if (promo && promoBtn) {
-      promoBtn.addEventListener("click", function (e) {
-        if (promoBtn.textContent.indexOf("applied") !== -1) return; // removing the code is always fine
-        if (promo.value.trim().toUpperCase() !== "PROMO10") {
-          e.stopImmediatePropagation();
-          H.toast("That code isn\u2019t valid. Try PROMO10.");
-        }
-      }, true);
-    }
+    pay.addEventListener("click", async function () {
+      var items = H.cart.items();
+      if (!items.length) return H.toast("Your cart is empty.");
+      if (!user) return H.session.requireLogin("cart.html");
+      pay.disabled = true;
+      pay.textContent = "Taking you to checkout…";
+      errBox.classList.add("hide");
+      try {
+        var r = await H.api.checkout(items.map(function (i) { return { kind: i.kind, id: i.id }; }));
+        try { sessionStorage.setItem("coursehub-pending-order", String(r.order_id)); } catch (e) {}
+        location.href = r.url;
+      } catch (e) {
+        errBox.textContent = e.status === 503 ? "Payments aren’t switched on for this site yet." : e.message;
+        errBox.classList.remove("hide");
+        pay.disabled = false;
+        pay.textContent = "Checkout";
+      }
+    });
   });
 })();

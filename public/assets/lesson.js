@@ -15,14 +15,28 @@
 
   var courseId = Number(H.getParam("course"));
   var course, flat = [];
+  // Progress lives on the server for enrolled accounts; anonymous preview watching stays in this browser.
   var progressKey = "coursehub-progress-" + courseId;
-  function progress() { try { return JSON.parse(localStorage.getItem(progressKey) || "[]"); } catch (e) { return []; } }
-  function markDone(key) {
+  var serverProgress = null;
+  function progress() {
+    if (serverProgress) return serverProgress;
+    try { return JSON.parse(localStorage.getItem(progressKey) || "[]"); } catch (e) { return []; }
+  }
+  function markDone(key, si, li) {
     var p = progress();
-    if (p.indexOf(key) === -1) { p.push(key); try { localStorage.setItem(progressKey, JSON.stringify(p)); } catch (e) {} }
+    if (p.indexOf(key) === -1) {
+      p.push(key);
+      if (serverProgress) {
+        H.api.progress(courseId, si, li).then(function (r) {
+          if (r.certificate_id) H.toast("🎓 Course complete — your certificate is ready in My learning.");
+        }).catch(function () {});
+      } else {
+        try { localStorage.setItem(progressKey, JSON.stringify(p)); } catch (e) {}
+      }
+    }
   }
 
-  function canPlay(lesson) { return course.price === 0 || lesson.preview === true; }
+  function canPlay(lesson) { return course.enrolled || course.can_manage || course.price === 0 || lesson.preview === true; }
 
   // YouTube / Vimeo links become embeds; direct media files use <video>
   function playerHtml(url) {
@@ -46,7 +60,7 @@
     var playable = canPlay(l);
     document.title = l.title + " — " + course.title + " — Coursehub";
     history.replaceState(null, "", "lesson.html?course=" + courseId + "&s=" + item.si + "&l=" + item.li);
-    if (playable) markDone(item.si + "-" + item.li);
+    if (playable) markDone(item.si + "-" + item.li, item.si, item.li);
 
     var inCart = H.cart.has("course", course.id);
     main.innerHTML =
@@ -58,6 +72,7 @@
               '<h2 style="font-size:18px;margin:10px 0 6px;color:#fff;">Unlock this lesson</h2>' +
               '<p style="font-size:13px;color:#C8C8CC;margin-bottom:16px;">Buy the course to watch all ' + flat.length + ' lessons. Lessons marked Preview are free to watch.</p>' +
               '<button class="btn btn-primary btn-sm" data-cart-toggle>' + (inCart ? "In your cart — go to checkout" : "Add to cart — " + H.money(course.price)) + "</button>" +
+              '<p style="font-size:12px;color:#8A8A90;margin-top:12px;">Already bought it? <a href="login.html?next=lesson.html%3Fcourse%3D' + course.id + '" style="color:#fff;text-decoration:underline;">Sign in</a></p>' +
             "</div>") +
       "</div>" +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin:24px 0 8px;flex-wrap:wrap;">' +
@@ -130,6 +145,7 @@
   if (!courseId) return notFound();
   H.api.course(courseId).then(function (c) {
     course = c;
+    if (c.enrolled) serverProgress = (c.progress || []).slice();
     (c.curriculum || []).forEach(function (s, si) {
       (s.lessons || []).forEach(function (l, li) { flat.push({ si: si, li: li, lesson: l }); });
     });

@@ -141,7 +141,12 @@
       set("avg_rating", s.avg_rating ? s.avg_rating.toFixed(1) + " / 5" : "—");
       var hero = document.querySelector("[data-hero-badge]");
       if (hero && s.courses) hero.textContent = H.num(s.courses) + " course" + (s.courses === 1 ? "" : "s") + " · " + H.num(s.instructors) + " instructor" + (s.instructors === 1 ? "" : "s");
-    } catch (e) {}
+    } catch (e) {
+      // stats unavailable — the static line in the HTML stays
+    }
+    // Space is reserved while loading; reveal only once the text is final (live count or the fallback)
+    var badge = document.querySelector("[data-hero-badge]");
+    if (badge) badge.style.visibility = "";
   }
 
   function bundleCard(b) {

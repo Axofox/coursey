@@ -103,7 +103,7 @@
     var list = document.querySelector("[data-cart-list]");
 
     var promoActive = false;
-    var TAX_RATE = 0.08;
+    var TAX_RATE = 0; // tax is calculated by Stripe at checkout
 
     function fmt(n) { return "$" + Math.round(n); }
 

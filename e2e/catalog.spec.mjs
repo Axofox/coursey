@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test.beforeEach(async ({ request }) => { await request.post("/api/_reset"); });
+test.beforeEach(async ({ request }) => { await request.post("/__test/reset"); });
 
 test.describe("catalog", () => {
   test("home shows categories, featured courses, bundles and live stats", async ({ page }) => {

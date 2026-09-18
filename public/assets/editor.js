@@ -33,19 +33,41 @@
     err.textContent = message || "";
     err.classList.toggle("hide", !message);
   }
+  var role = "admin"; // or "instructor" — decides which controls show
+  var tokenMode = false;
+  $("[data-login-mode]").addEventListener("click", function () {
+    tokenMode = !tokenMode;
+    $("[data-login-account]").classList.toggle("hide", tokenMode);
+    $("[data-login-token]").classList.toggle("hide", !tokenMode);
+    this.textContent = tokenMode ? "Sign in with an account instead" : "Use the admin token instead";
+  });
   $("[data-login-form]").addEventListener("submit", async function (e) {
     e.preventDefault();
-    var token = e.target.token.value.trim();
-    if (!token) return;
-    H.setToken(token);
+    var form = e.target;
     try {
-      await H.api.checkToken();
-      e.target.token.value = "";
+      if (tokenMode) {
+        var token = form.token.value.trim();
+        if (!token) return;
+        H.setToken(token);
+        await H.api.checkToken();
+        role = "admin";
+      } else {
+        if (!H.validate(form, { email: H.rules.email, password: H.rules.required("Password") })) return;
+        var user = await H.api.login({ email: form.email.value.trim(), password: form.password.value });
+        H.session.set(user);
+        if (user.role === "learner") {
+          await H.api.logout().catch(function () {});
+          H.session.set(null);
+          return showApp(false, "Only instructors and admins can create courses. Apply on the Teach page first.");
+        }
+        role = user.role;
+      }
+      form.reset();
       showApp(true);
       boot();
     } catch (err) {
       H.setToken("");
-      showApp(false, err.status === 401 ? "That token isn’t right." : "Couldn’t reach the server: " + err.message);
+      showApp(false, err.status === 401 ? (tokenMode ? "That token isn\u2019t right." : "Wrong email or password.") : "Couldn\u2019t reach the server: " + err.message);
     }
   });
 
@@ -288,8 +310,13 @@
         history.replaceState(null, "", "course-upload.html?id=" + courseId);
         $("[data-editor-title]").textContent = "Edit “" + saved.title + "”";
       }
-      notify(published ? "“" + saved.title + "” is live." : "Draft saved.");
-      if (published) setTimeout(function () { location.href = "course-detail.html?id=" + courseId; }, 900);
+      if (published && saved.status === "pending") {
+        notify("“" + saved.title + "” was submitted for review.");
+        setTimeout(function () { location.href = "seller-dashboard.html"; }, 900);
+      } else {
+        notify(published ? "“" + saved.title + "” is live." : "Draft saved.");
+        if (published) setTimeout(function () { location.href = "course-detail.html?id=" + courseId; }, 900);
+      }
     } catch (e) {
       if (e.status === 401) { H.setToken(""); showApp(false, "Your session expired — please sign in again."); }
       else showError(e.message);
@@ -300,7 +327,19 @@
   document.querySelectorAll("[data-save-draft]").forEach(function (b) { b.addEventListener("click", function () { save(false); }); });
   $("[data-publish]").addEventListener("click", function () { save(true); });
 
+  function applyRole() {
+    var instructor = role === "instructor";
+    document.querySelectorAll("[data-admin-only]").forEach(function (el) { el.classList.toggle("hide", instructor); });
+    $("[data-publish]").textContent = instructor ? "Submit for review" : "Publish course";
+    $("[data-publish-note]").textContent = instructor
+      ? "Submitting sends the course to the Coursehub team for a quick review. You\u2019ll get an email when it\u2019s live, and you can keep editing meanwhile."
+      : "Publishing makes the course visible on the homepage and in search immediately. You can unpublish it any time from the admin console.";
+    $("[data-back-link]").href = instructor ? "seller-dashboard.html" : "admin-dashboard.html?tab=courses";
+    $("[data-back-label]").textContent = instructor ? "Instructor Studio" : "Platform admin";
+  }
+
   async function boot() {
+    applyRole();
     try {
       categories = await H.api.categories();
     } catch (e) {
@@ -326,14 +365,11 @@
   }
 
   (async function () {
-    if (!H.getToken()) return showApp(false);
-    try {
-      await H.api.checkToken();
-      showApp(true);
-      boot();
-    } catch (e) {
-      H.setToken("");
-      showApp(false);
+    var user = await H.session.get();
+    if (user && user.role !== "learner") { role = user.role; showApp(true); return boot(); }
+    if (H.getToken()) {
+      try { await H.api.checkToken(); role = "admin"; showApp(true); return boot(); } catch (e) { H.setToken(""); }
     }
+    showApp(false, user ? "Only instructors and admins can create courses. Apply on the Teach page first." : "");
   })();
 })();

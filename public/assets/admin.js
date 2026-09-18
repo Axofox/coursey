@@ -16,8 +16,8 @@
   ];
 
   var state = {
-    categories: [], courses: [], bundles: [], reviews: [], applications: [],
-    editingCategory: null, swatch: 0, editingBundle: null, reviewFilter: "pending",
+    categories: [], courses: [], bundles: [], reviews: [], applications: [], users: [], orders: [],
+    editingCategory: null, swatch: 0, editingBundle: null, reviewFilter: "pending", courseStatus: "all",
   };
 
   /* ---------- Toast / errors ---------- */
@@ -37,7 +37,7 @@
     }
   }
 
-  /* ---------- Sign in ---------- */
+  /* ---------- Sign in (admin account, or the break-glass token) ---------- */
   function showApp(authed, message) {
     login.classList.toggle("hide", authed);
     app.classList.toggle("hide", !authed);
@@ -45,25 +45,44 @@
     err.textContent = message || "";
     err.classList.toggle("hide", !message);
   }
-
+  var tokenMode = false;
+  $("[data-login-mode]").addEventListener("click", function () {
+    tokenMode = !tokenMode;
+    $("[data-login-account]").classList.toggle("hide", tokenMode);
+    $("[data-login-token]").classList.toggle("hide", !tokenMode);
+    this.textContent = tokenMode ? "Sign in with an account instead" : "Use the admin token instead";
+  });
   $("[data-login-form]").addEventListener("submit", async function (e) {
     e.preventDefault();
-    var input = e.target.token;
-    var token = input.value.trim();
-    if (!token) return;
-    H.setToken(token);
+    var form = e.target;
     try {
-      await H.api.checkToken();
-      input.value = "";
+      if (tokenMode) {
+        var token = form.token.value.trim();
+        if (!token) return;
+        H.setToken(token);
+        await H.api.checkToken();
+      } else {
+        if (!H.validate(form, { email: H.rules.email, password: H.rules.required("Password") })) return;
+        var user = await H.api.login({ email: form.email.value.trim(), password: form.password.value });
+        H.session.set(user);
+        if (user.role !== "admin") {
+          await H.api.logout().catch(function () {});
+          H.session.set(null);
+          return showApp(false, "That account isn\u2019t an admin.");
+        }
+      }
+      form.reset();
       showApp(true);
       refresh();
     } catch (err) {
       H.setToken("");
-      showApp(false, err.status === 401 ? "That token isn’t right." : "Couldn’t reach the server: " + err.message);
+      showApp(false, err.status === 401 ? (tokenMode ? "That token isn\u2019t right." : "Wrong email or password.") : err.status === 429 ? "Too many attempts \u2014 wait a few minutes." : "Couldn\u2019t reach the server: " + err.message);
     }
   });
-  $("[data-signout]").addEventListener("click", function () {
+  $("[data-signout]").addEventListener("click", async function () {
     H.setToken("");
+    await H.api.logout().catch(function () {});
+    H.session.set(null);
     showApp(false);
   });
 
@@ -73,13 +92,15 @@
     try {
       var results = await Promise.all([
         H.api.categories(), H.api.courses({ all: 1 }), H.api.bundles({ all: 1 }),
-        H.api.reviews(), H.api.applications(),
+        H.api.reviews(), H.api.applications(), H.api.users(), H.api.allOrders(),
       ]);
       state.categories = results[0];
       state.courses = results[1];
       state.bundles = results[2];
       state.reviews = results[3];
       state.applications = results[4];
+      state.users = results[5];
+      state.orders = results[6];
     } catch (e) {
       return handleFailure(e);
     }
@@ -90,6 +111,8 @@
     renderApplications();
     renderOverview();
     renderReports();
+    renderUsers();
+    renderOrders();
   }
 
   function timeAgo(iso) {
@@ -106,7 +129,11 @@
     var newApps = state.applications.filter(function (a) { return a.status === "new"; }).length;
     var set = function (k, v) { var el = $('[data-ov="' + k + '"]'); if (el) el.textContent = v; };
     set("courses", state.courses.filter(function (c) { return c.published; }).length);
-    set("drafts", state.courses.filter(function (c) { return !c.published; }).length);
+    var pendingCourses = state.courses.filter(function (c) { return c.status === "pending"; }).length;
+    set("pending", pendingCourses);
+    $('[data-ov-card="pending"]').style.borderColor = pendingCourses ? "var(--amber)" : "";
+    var cbadge = $("[data-pending-courses]");
+    cbadge.textContent = pendingCourses; cbadge.classList.toggle("hide", !pendingCourses);
     set("reviews", pendingReviews);
     set("applications", newApps);
     $('[data-ov-card="reviews"]').style.borderColor = pendingReviews ? "var(--amber)" : "";
@@ -119,7 +146,9 @@
     var events = []
       .concat(state.reviews.map(function (r) { return { at: r.created_at, kind: r.status === "pending" ? "amber" : "success", text: "Review by " + r.name + " on \u201C" + r.course_title + "\u201D" + (r.status === "pending" ? " is waiting for approval" : " was approved"), tab: "reviews" }; }))
       .concat(state.applications.map(function (a) { return { at: a.created_at, kind: "info", text: "Instructor application from " + a.name + " (" + a.expertise + ")", tab: "instructors" }; }))
-      .concat(state.courses.map(function (c) { return { at: c.updated_at, kind: "neutral", text: "Course \u201C" + c.title + "\u201D " + (c.published ? "updated" : "saved as draft"), tab: "courses" }; }))
+      .concat(state.courses.map(function (c) { return { at: c.updated_at, kind: c.status === "pending" ? "amber" : "neutral", text: "Course \u201C" + c.title + "\u201D " + (c.status === "pending" ? "submitted for review" : c.published ? "updated" : "saved as draft"), tab: "courses" }; }))
+      .concat(state.orders.filter(function (o) { return o.status === "paid"; }).map(function (o) { return { at: o.paid_at, kind: "success", text: o.name + " paid " + H.money(o.amount_cents / 100) + " for " + o.items.map(function (i) { return "\u201C" + i.title + "\u201D"; }).join(", "), tab: "payments" }; }))
+      .concat(state.users.map(function (u) { return { at: u.created_at, kind: "info", text: "New account: " + u.name + " (" + u.role + ")", tab: "learners" }; }))
       .sort(function (a, b) { return new Date(b.at) - new Date(a.at); }).slice(0, 8);
     var colors = { amber: ["#FCF1DE", "#B7791F"], success: ["#E7F5EC", "#1F8A4C"], info: ["#E3F1FB", "#3E93C9"], neutral: ["var(--surface-alt)", "var(--ink-soft)"] };
     $("[data-activity]").innerHTML = events.map(function (ev, i) {
@@ -306,6 +335,49 @@
     });
   }
 
+  /* ---------- Users ---------- */
+  function renderUsers() {
+    var rows = $("[data-user-rows]");
+    var badges = { admin: "badge-accent", instructor: "badge-success", learner: "badge-neutral" };
+    rows.innerHTML = state.users.map(function (u) {
+      return '<div class="trow" style="grid-template-columns:1.6fr 1.6fr 0.9fr 0.7fr 0.8fr 1.1fr;min-width:820px;">' +
+        '<div class="tcell" style="gap:10px;"><div style="' + "width:30px;height:30px;border-radius:999px;background:var(--accent-tint);color:var(--accent-strong);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0;" + '">' + esc(H.initials(u.name)) + "</div><span>" + esc(u.name) + "</span></div>" +
+        '<div class="tcell" style="color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;">' + esc(u.email) + "</div>" +
+        '<div class="tcell"><span class="badge ' + badges[u.role] + '">' + esc(u.role) + "</span></div>" +
+        '<div class="tcell" style="color:var(--ink-soft);">' + u.enrolments + "</div>" +
+        '<div class="tcell" style="color:var(--ink-soft);">' + H.money(u.spent_cents / 100) + "</div>" +
+        '<div class="tcell" style="gap:8px;"><select class="input" style="height:32px;font-size:12px;padding:0 8px;" data-user-role="' + u.id + '">' +
+          ["learner", "instructor", "admin"].map(function (r) { return '<option value="' + r + '"' + (u.role === r ? " selected" : "") + ">" + r + "</option>"; }).join("") +
+        "</select></div></div>";
+    }).join("") || '<div class="tcell" style="color:var(--ink-faint);">No accounts yet.</div>';
+    rows.querySelectorAll("[data-user-role]").forEach(function (sel) {
+      sel.addEventListener("change", async function () {
+        var u = state.users.find(function (x) { return x.id === Number(sel.dataset.userRole); });
+        if (!confirm("Change " + u.name + "\u2019s role to " + sel.value + "?")) { sel.value = u.role; return; }
+        try { await H.api.updateUser(u.id, sel.value); notify(u.name + " is now " + (sel.value === "admin" ? "an admin" : sel.value === "instructor" ? "an instructor" : "a learner") + "."); refresh(); }
+        catch (e) { sel.value = u.role; handleFailure(e); }
+      });
+    });
+  }
+
+  /* ---------- Orders ---------- */
+  function renderOrders() {
+    var paid = state.orders.filter(function (o) { return o.status === "paid"; });
+    $('[data-pay="gross"]').textContent = H.money(paid.reduce(function (n, o) { return n + o.amount_cents; }, 0) / 100);
+    $('[data-pay="orders"]').textContent = paid.length;
+    $('[data-pay="pending"]').textContent = state.orders.filter(function (o) { return o.status === "pending"; }).length;
+    var badges = { paid: "badge-success", pending: "badge-amber", refunded: "badge-neutral" };
+    $("[data-order-rows]").innerHTML = state.orders.map(function (o) {
+      return '<div class="trow" style="grid-template-columns:0.6fr 1.2fr 2fr 0.8fr 0.9fr 1fr;min-width:820px;">' +
+        '<div class="tcell" style="color:var(--ink-faint);">#' + o.id + "</div>" +
+        '<div class="tcell" style="color:var(--ink-soft);overflow:hidden;"><div><div>' + esc(o.name) + '</div><div style="font-size:11px;color:var(--ink-faint);">' + esc(o.email) + "</div></div></div>" +
+        '<div class="tcell" style="color:var(--ink-soft);">' + o.items.map(function (i) { return esc(i.title); }).join(", ") + "</div>" +
+        '<div class="tcell" style="font-weight:600;">' + H.money(o.amount_cents / 100) + "</div>" +
+        '<div class="tcell"><span class="badge ' + badges[o.status] + '">' + esc(o.status) + "</span></div>" +
+        '<div class="tcell" style="color:var(--ink-soft);">' + timeAgo(o.paid_at || o.created_at) + "</div></div>";
+    }).join("") || '<div class="tcell" style="color:var(--ink-faint);">No orders yet.</div>';
+  }
+
   /* ---------- Reports: single-hue magnitude bars, one row per value ---------- */
   function bars(pairs) {
     var max = pairs.reduce(function (m, p) { return Math.max(m, p[1]); }, 0) || 1;
@@ -331,27 +403,40 @@
   }
 
   /* ---------- Courses table ---------- */
+  document.querySelectorAll("[data-course-status]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      state.courseStatus = b.dataset.courseStatus;
+      document.querySelectorAll("[data-course-status]").forEach(function (x) { x.classList.toggle("active", x === b); });
+      renderCourses();
+    });
+  });
   function renderCourses() {
     $("[data-course-count]").textContent = state.courses.length;
     var rows = $("[data-course-rows]");
-    if (!state.courses.length) {
-      rows.innerHTML = '<div class="tcell" style="color:var(--ink-faint);">No courses yet — create the first one.</div>';
+    var list = state.courses.filter(function (c) { return state.courseStatus === "all" || c.status === state.courseStatus; });
+    if (!list.length) {
+      rows.innerHTML = '<div class="tcell" style="color:var(--ink-faint);">' + (state.courses.length ? "Nothing with that status." : "No courses yet — create the first one.") + "</div>";
       return;
     }
-    rows.innerHTML = state.courses.map(function (c) {
+    rows.innerHTML = list.map(function (c) {
+      var owner = state.users.find(function (u) { return u.id === c.owner_id; });
       return '<div class="trow" style="grid-template-columns:2.4fr 1.2fr 1fr 0.7fr 1.1fr 1.3fr;min-width:900px;" data-course-row="' + c.id + '">' +
         '<div class="tcell" style="gap:12px;"><div class="thumb" style="background:' + esc(c.icon_bg) + ';"></div>' +
           '<a href="course-detail.html?id=' + c.id + '" style="font-weight:500;">' + esc(c.title) + "</a></div>" +
-        '<div class="tcell" style="color:var(--ink-soft);">' + esc(c.instructor_name || "—") + "</div>" +
+        '<div class="tcell" style="color:var(--ink-soft);"><div>' + esc(c.instructor_name || "—") + (owner ? '<div style="font-size:11px;color:var(--ink-faint);">' + esc(owner.email) + "</div>" : "") + "</div></div>" +
         '<div class="tcell" style="color:var(--ink-soft);">' + esc(c.category_name) + "</div>" +
         '<div class="tcell" style="font-weight:600;">' + H.money(c.price) + "</div>" +
-        '<div class="tcell">' + (c.published
+        '<div class="tcell">' + (c.status === "published"
           ? '<span class="badge badge-success">Published</span>'
+          : c.status === "pending" ? '<span class="badge badge-amber">Awaiting review</span>'
           : '<span class="badge badge-neutral">Draft</span>') +
-          (c.featured ? ' <span class="badge badge-accent" style="margin-left:6px;">Featured</span>' : "") + "</div>" +
+          (c.featured ? ' <span class="badge badge-accent" style="margin-left:6px;">Featured</span>' : "") +
+          (c.enrolled_count ? ' <span style="font-size:11px;color:var(--ink-faint);margin-left:6px;">' + c.enrolled_count + " enrolled</span>" : "") + "</div>" +
         '<div class="tcell" style="gap:14px;">' +
           '<a class="link-btn" href="course-upload.html?id=' + c.id + '">Edit</a>' +
-          '<button class="link-btn" data-toggle-publish="' + c.id + '">' + (c.published ? "Unpublish" : "Publish") + "</button>" +
+          (c.status === "pending"
+            ? '<button class="link-btn" style="color:var(--success);" data-toggle-publish="' + c.id + '">Approve &amp; publish</button>'
+            : '<button class="link-btn" data-toggle-publish="' + c.id + '">' + (c.published ? "Unpublish" : "Publish") + "</button>") +
           '<button class="link-btn danger" data-delete-course="' + c.id + '">Delete</button>' +
         "</div></div>";
     }).join("");
@@ -472,14 +557,11 @@
   /* ---------- Boot ---------- */
   setCategoryForm(null);
   (async function () {
-    if (!H.getToken()) return showApp(false);
-    try {
-      await H.api.checkToken();
-      showApp(true);
-      refresh();
-    } catch (e) {
-      H.setToken("");
-      showApp(false);
+    var user = await H.session.get();
+    if (user && user.role === "admin") { showApp(true); return refresh(); }
+    if (H.getToken()) {
+      try { await H.api.checkToken(); showApp(true); return refresh(); } catch (e) { H.setToken(""); }
     }
+    showApp(false, user ? "Signed in as " + user.email + ", which isn\u2019t an admin account." : "");
   })();
 })();

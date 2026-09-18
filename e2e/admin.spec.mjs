@@ -1,24 +1,40 @@
 import { test, expect } from "@playwright/test";
+import { seedAdmin } from "./helpers.mjs";
 
-async function signIn(page, token = "testtoken") {
+// Creates the admin account (first signup) and opens the console signed in.
+async function signIn(page) {
+  await seedAdmin(page);
   await page.goto("/admin-dashboard.html");
-  // A token already in sessionStorage signs in automatically
-  const alreadyIn = await page.locator("[data-admin-app]:not(.hide)").count();
-  if (alreadyIn) return;
-  await page.locator("#admin-token").fill(token);
-  await page.locator("[data-login-form] button[type=submit]").click();
+  await expect(page.locator("[data-admin-app]")).toBeVisible();
 }
 
 test.describe("admin", () => {
-  test.beforeEach(async ({ request }) => { await request.post("/api/_reset"); });
+  test.beforeEach(async ({ request }) => { await request.post("/__test/reset"); });
 
-  test("rejects a wrong token and accepts the right one", async ({ page }) => {
-    await signIn(page, "wrong");
-    await expect(page.locator("[data-login-error]")).toHaveText("That token isn’t right.");
-    await page.locator("#admin-token").fill("testtoken");
+  test("account sign-in: wrong password, non-admin account, admin account, break-glass token", async ({ page }) => {
+    await seedAdmin(page);
+    await page.request.post("/api/auth/logout");
+    await page.goto("/admin-dashboard.html");
+    await page.locator("#admin-email").fill("admin@example.com");
+    await page.locator("#admin-password").fill("wrong-password-1");
+    await page.locator("[data-login-form] button[type=submit]").click();
+    await expect(page.locator("[data-login-error]")).toHaveText("Wrong email or password.");
+    await page.request.post("/api/auth/signup", { data: { name: "Ana", email: "ana@example.com", password: "ana-password-1" } });
+    await page.request.post("/api/auth/logout");
+    await page.locator("#admin-email").fill("ana@example.com");
+    await page.locator("#admin-password").fill("ana-password-1");
+    await page.locator("[data-login-form] button[type=submit]").click();
+    await expect(page.locator("[data-login-error]")).toContainText("isn’t an admin");
+    await page.locator("#admin-email").fill("admin@example.com");
+    await page.locator("#admin-password").fill("e2e-password-1");
     await page.locator("[data-login-form] button[type=submit]").click();
     await expect(page.locator("[data-admin-app]")).toBeVisible();
     await expect(page.locator('[data-ov="courses"]')).toHaveText("8");
+    await page.locator("[data-signout]").click();
+    await page.locator("[data-login-mode]").click();
+    await page.locator("#admin-token").fill("testtoken");
+    await page.locator("[data-login-form] button[type=submit]").click();
+    await expect(page.locator("[data-admin-app]")).toBeVisible();
   });
 
   test("courses table, unpublish hides from the catalog", async ({ page }) => {
@@ -27,8 +43,8 @@ test.describe("admin", () => {
     await expect(page.locator("[data-course-rows] .trow")).toHaveCount(8);
     await page.locator('[data-toggle-publish="8"]').click();
     await expect(page.locator('[data-course-row="8"]')).toContainText("Draft");
-    const res = await page.request.get("/api/courses/8");
-    expect(res.status()).toBe(404);
+    expect(await (await page.request.get("/api/courses?q=machine+learning")).json()).toHaveLength(0); // gone from the catalog
+    expect((await page.request.get("/api/courses/8")).status()).toBe(200); // but admins still see it
     await page.locator('[data-toggle-publish="8"]').click();
     await expect(page.locator('[data-course-row="8"]')).toContainText("Published");
   });
@@ -46,7 +62,8 @@ test.describe("admin", () => {
 
   test("review moderation approves a pending review", async ({ page }) => {
     await signIn(page);
-    await page.locator('[data-tab="reviews"]').click();
+    await page.request.post("/api/reviews", { data: { course_id: 1, rating: 5, body: "Clear, structured, and actually project-based." } });
+    await page.goto("/admin-dashboard.html?tab=reviews");
     const pendingBefore = await page.locator('[data-review-status="approved"]').count();
     expect(pendingBefore).toBeGreaterThan(0);
     await page.locator('[data-review-status="approved"]').first().click();
@@ -65,9 +82,9 @@ test.describe("admin", () => {
   });
 
   test("editor creates a draft course that shows in the admin table", async ({ page }) => {
+    await seedAdmin(page);
     await page.goto("/course-upload.html");
-    await page.locator("#admin-token").fill("testtoken");
-    await page.locator("[data-login-form] button[type=submit]").click();
+    await expect(page.locator("[data-admin-app]")).toBeVisible();
     await page.locator('[data-step-goto="4"]').click(); // jump straight to publish with an empty form
     await page.locator("[data-publish]").click();
     await expect(page.locator('[data-error-for="title"]')).toHaveText("A course title is required.");
@@ -77,8 +94,7 @@ test.describe("admin", () => {
     await page.locator("[data-save-draft]").first().click();
     await expect(page.locator(".toast")).toContainText("Draft saved");
     await expect(page).toHaveURL(/course-upload\.html\?id=\d+/);
-    await signIn(page);
-    await page.locator('[data-tab="courses"]').click();
+    await page.goto("/admin-dashboard.html?tab=courses");
     const row = page.locator("[data-course-rows] .trow", { hasText: "Playwright 101" });
     await expect(row).toContainText("Draft");
   });

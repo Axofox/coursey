@@ -22,14 +22,19 @@
     </div>
     <div>
       <h1 style="font-size:20px;margin-bottom:4px;">Course editor</h1>
-      <p style="font-size:13px;color:var(--ink-soft);">Sign in with the admin token to create or edit courses.</p>
+      <p style="font-size:13px;color:var(--ink-soft);">Sign in as an instructor or admin to create or edit courses.</p>
     </div>
     <div class="notice notice-error hide" data-login-error></div>
-    <div>
+    <div data-login-account>
+      <div style="margin-bottom:14px;"><label for="admin-email">Email</label><input id="admin-email" name="email" class="input" type="email" autocomplete="email"></div>
+      <div><label for="admin-password">Password</label><input id="admin-password" name="password" class="input" type="password" autocomplete="current-password"></div>
+    </div>
+    <div data-login-token class="hide">
       <label for="admin-token">Admin token</label>
-      <input id="admin-token" name="token" class="input" type="password" autocomplete="current-password" required>
+      <input id="admin-token" name="token" class="input" type="password" autocomplete="off">
     </div>
     <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+    <p style="font-size:12px;color:var(--ink-faint);text-align:center;"><button type="button" class="link-btn" data-login-mode>Use the admin token instead</button></p>
     <a href="index.html" class="navlink" style="text-align:center;">&larr; Back to marketplace</a>
   </form>
 </div>
@@ -40,11 +45,11 @@
 <div style="position:sticky;top:0;z-index:50;background:var(--surface);border-bottom:1px solid var(--border);">
   <div class="container container--narrow" style="height:76px;display:flex;align-items:center;justify-content:space-between;">
     <div style="display:flex;align-items:center;gap:14px;">
-      <a href="admin-dashboard.html?tab=courses" style="color:var(--ink-soft);display:flex;" aria-label="Back to courses">
+      <a href="admin-dashboard.html?tab=courses" style="color:var(--ink-soft);display:flex;" aria-label="Back" data-back-link>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
       </a>
       <div>
-        <div style="font-size:12px;color:var(--ink-faint);">Platform admin</div>
+        <div style="font-size:12px;color:var(--ink-faint);" data-back-label>Platform admin</div>
         <div style="font-size:15px;font-weight:600;" data-editor-title>Create a new course</div>
       </div>
     </div>
@@ -120,7 +125,7 @@
         <label for="cu-language">Language</label>
         <input id="cu-language" class="input" type="text" value="English" name="language" data-field="language">
       </div>
-      <div>
+      <div data-admin-only>
         <label for="cu-badge">Badge</label>
         <select id="cu-badge" class="input" name="badge" data-field="badge">
           <option value="">None</option>
@@ -202,18 +207,18 @@
         <label for="cu-students">Students enrolled</label>
         <input id="cu-students" class="input" type="number" min="0" step="1" value="0" name="students" data-field="students">
       </div>
-      <div>
+      <div data-admin-only>
         <label for="cu-rating">Rating (0–5)</label>
         <input id="cu-rating" class="input" type="number" min="0" max="5" step="0.1" value="0" name="rating" data-field="rating">
       </div>
-      <div>
+      <div data-admin-only>
         <label for="cu-rating-count">Number of ratings</label>
         <input id="cu-rating-count" class="input" type="number" min="0" step="1" value="0" name="rating_count" data-field="rating_count">
       </div>
     </div>
-    <p style="font-size:13px;color:var(--ink-soft);">Ratings show as &ldquo;No ratings yet&rdquo; while the count is 0. Real reviews arrive once learners have accounts.</p>
+    <p style="font-size:13px;color:var(--ink-soft);" data-admin-only>Manual figures show until the course has approved reviews; then the real average takes over.</p>
 
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:var(--surface-alt);border-radius:12px;">
+    <div data-admin-only style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:var(--surface-alt);border-radius:12px;">
       <div>
         <div style="font-size:14px;font-weight:600;">Featured on the homepage</div>
         <div style="font-size:12px;color:var(--ink-soft);margin-top:2px;">Show this course in the &ldquo;Featured courses&rdquo; grid</div>
@@ -227,7 +232,7 @@
     <h2 style="font-size:20px;margin-bottom:20px;">Ready to publish</h2>
     <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:28px;" data-checklist></div>
     <div style="background:var(--accent-tint);border-radius:12px;padding:18px 20px;margin-bottom:24px;">
-      <div style="font-size:13px;color:var(--accent-strong);line-height:1.6;">Publishing makes the course visible on the homepage and in search immediately. You can unpublish it any time from the admin console.</div>
+      <div style="font-size:13px;color:var(--accent-strong);line-height:1.6;" data-publish-note>Publishing makes the course visible on the homepage and in search immediately. You can unpublish it any time from the admin console.</div>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;">
       <button type="button" class="btn btn-primary" data-publish>Publish course</button>

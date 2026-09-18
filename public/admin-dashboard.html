@@ -31,11 +31,16 @@
       <p style="font-size:13px;color:var(--ink-soft);">Sign in with the admin token to manage the catalog.</p>
     </div>
     <div class="notice notice-error hide" data-login-error></div>
-    <div>
+    <div data-login-account>
+      <div style="margin-bottom:14px;"><label for="admin-email">Email</label><input id="admin-email" name="email" class="input" type="email" autocomplete="email"></div>
+      <div><label for="admin-password">Password</label><input id="admin-password" name="password" class="input" type="password" autocomplete="current-password"></div>
+    </div>
+    <div data-login-token class="hide">
       <label for="admin-token">Admin token</label>
-      <input id="admin-token" name="token" class="input" type="password" autocomplete="current-password" required>
+      <input id="admin-token" name="token" class="input" type="password" autocomplete="off">
     </div>
     <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+    <p style="font-size:12px;color:var(--ink-faint);text-align:center;"><button type="button" class="link-btn" data-login-mode>Use the admin token instead</button></p>
     <a href="index.html" class="navlink" style="text-align:center;">&larr; Back to marketplace</a>
   </form>
 </div>
@@ -58,6 +63,7 @@
       <button class="navitem" data-tab-group="admin" data-tab="courses" data-tab-title="Courses">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
         Courses
+        <span data-pending-courses class="hide" style="margin-left:auto;background:var(--amber);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;">0</span>
       </button>
       <button class="navitem" data-tab-group="admin" data-tab="categories" data-tab-title="Categories">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
@@ -128,7 +134,7 @@
       <div data-tab-group="admin" data-tab-panel="overview">
         <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:32px;" class="grid-4">
           <div class="card" style="padding:20px;"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);" data-ov="courses">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Published courses</div></div>
-          <div class="card" style="padding:20px;"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);" data-ov="drafts">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Drafts</div></div>
+          <div class="card" style="padding:20px;" data-ov-card="pending"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);" data-ov="pending">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Courses awaiting review</div></div>
           <div class="card" style="padding:20px;" data-ov-card="reviews"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);" data-ov="reviews">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Reviews awaiting approval</div></div>
           <div class="card" style="padding:20px;" data-ov-card="applications"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);" data-ov="applications">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">New instructor applications</div></div>
         </div>
@@ -139,14 +145,22 @@
       <!-- COURSES -->
       <div data-tab-group="admin" data-tab-panel="courses" class="hide">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
-          <p style="font-size:14px;color:var(--ink-soft);"><span data-course-count>0</span> courses in the catalog. Drafts are hidden from learners.</p>
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+            <p style="font-size:14px;color:var(--ink-soft);"><span data-course-count>0</span> courses in the catalog.</p>
+            <div style="display:flex;gap:8px;">
+              <button class="pill active" data-course-status="all">All</button>
+              <button class="pill" data-course-status="pending">Awaiting review</button>
+              <button class="pill" data-course-status="published">Published</button>
+              <button class="pill" data-course-status="draft">Drafts</button>
+            </div>
+          </div>
           <a href="course-upload.html" class="btn btn-primary btn-sm">+ New course</a>
         </div>
         <div class="notice notice-error hide" data-admin-error style="margin-bottom:16px;"></div>
         <div class="card admin-table" style="overflow:hidden;overflow-x:auto;" data-course-table>
           <div class="trow" style="grid-template-columns:2.4fr 1.2fr 1fr 0.7fr 1.1fr 1.3fr;min-width:900px;background:var(--surface-alt);">
             <div class="tcell label-caps">Course</div>
-            <div class="tcell label-caps">Instructor</div>
+            <div class="tcell label-caps">Instructor / owner</div>
             <div class="tcell label-caps">Category</div>
             <div class="tcell label-caps">Price</div>
             <div class="tcell label-caps">Status</div>
@@ -238,67 +252,33 @@
         <div class="card admin-table" style="overflow:hidden;" data-application-rows><div class="tcell" style="color:var(--ink-faint);">Loading…</div></div>
       </div>
 
-      <!-- LEARNERS -->
+      <!-- LEARNERS (accounts) -->
       <div data-tab-group="admin" data-tab-panel="learners" class="hide">
-        <div class="notice" style="margin-bottom:16px;">Sample data — this section isn’t connected to real accounts or payments yet.</div>
-<div class="card" style="overflow:hidden;overflow-x:auto;">
-        <div class="trow" style="grid-template-columns:1.4fr 1.2fr 0.8fr 1fr 0.8fr;background:var(--surface-alt);min-width:680px;">
-          <div class="tcell" style="font-weight:600;color:var(--ink-faint);text-transform:uppercase;font-size:11px;">Learner</div>
-          <div class="tcell" style="font-weight:600;color:var(--ink-faint);text-transform:uppercase;font-size:11px;">Email</div>
-          <div class="tcell" style="font-weight:600;color:var(--ink-faint);text-transform:uppercase;font-size:11px;">Courses</div>
-          <div class="tcell" style="font-weight:600;color:var(--ink-faint);text-transform:uppercase;font-size:11px;">Joined</div>
-          <div class="tcell" style="font-weight:600;color:var(--ink-faint);text-transform:uppercase;font-size:11px;">Status</div>
+        <p style="font-size:14px;color:var(--ink-soft);margin-bottom:20px;">Every account. Change a role to grant Instructor Studio or admin access.</p>
+        <div class="card admin-table" style="overflow:hidden;overflow-x:auto;">
+          <div class="trow" style="grid-template-columns:1.6fr 1.6fr 0.9fr 0.7fr 0.8fr 1.1fr;min-width:820px;background:var(--surface-alt);">
+            <div class="tcell label-caps">Name</div><div class="tcell label-caps">Email</div><div class="tcell label-caps">Role</div>
+            <div class="tcell label-caps">Enrolled</div><div class="tcell label-caps">Spent</div><div class="tcell label-caps">Actions</div>
+          </div>
+          <div data-user-rows><div class="tcell" style="color:var(--ink-faint);">Loading…</div></div>
         </div>
-        <div class="trow" style="grid-template-columns:1.4fr 1.2fr 0.8fr 1fr 0.8fr;min-width:680px;">
-          <div class="tcell" style="font-weight:500;">Alex Rivera</div><div class="tcell" style="color:var(--ink-soft);">alex.rivera@example.com</div><div class="tcell">10</div><div class="tcell" style="color:var(--ink-soft);">Mar 2025</div><div class="tcell"><span class="badge badge-success">Active</span></div>
-        </div>
-        <div class="trow" style="grid-template-columns:1.4fr 1.2fr 0.8fr 1fr 0.8fr;min-width:680px;">
-          <div class="tcell" style="font-weight:500;">Priya Nair</div><div class="tcell" style="color:var(--ink-soft);">priya@example.com</div><div class="tcell">4</div><div class="tcell" style="color:var(--ink-soft);">Jan 2026</div><div class="tcell"><span class="badge badge-success">Active</span></div>
-        </div>
-        <div class="trow" style="grid-template-columns:1.4fr 1.2fr 0.8fr 1fr 0.8fr;min-width:680px;">
-          <div class="tcell" style="font-weight:500;">Jonas Weber</div><div class="tcell" style="color:var(--ink-soft);">jonas@example.com</div><div class="tcell">7</div><div class="tcell" style="color:var(--ink-soft);">Nov 2024</div><div class="tcell"><span class="badge badge-success">Active</span></div>
-        </div>
-        <div class="trow" style="grid-template-columns:1.4fr 1.2fr 0.8fr 1fr 0.8fr;min-width:680px;">
-          <div class="tcell" style="font-weight:500;">Amara Diallo</div><div class="tcell" style="color:var(--ink-soft);">amara@example.com</div><div class="tcell">2</div><div class="tcell" style="color:var(--ink-soft);">Aug 2026</div><div class="tcell"><span class="badge badge-success">Active</span></div>
-        </div>
-        <div class="trow" style="grid-template-columns:1.4fr 1.2fr 0.8fr 1fr 0.8fr;min-width:680px;">
-          <div class="tcell" style="font-weight:500;">Sara Kim</div><div class="tcell" style="color:var(--ink-soft);">sara@example.com</div><div class="tcell">5</div><div class="tcell" style="color:var(--ink-soft);">Feb 2025</div><div class="tcell"><span class="badge badge-success">Active</span></div>
-        </div>
-      </div>
       </div>
 
-      <!-- PAYMENTS -->
+      <!-- PAYMENTS (orders) -->
       <div data-tab-group="admin" data-tab-panel="payments" class="hide">
-        <div class="notice" style="margin-bottom:16px;">Sample data — this section isn’t connected to real accounts or payments yet.</div>
-<div class="card" style="overflow:hidden;overflow-x:auto;">
-        <div class="trow" style="grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;background:var(--surface-alt);min-width:600px;">
-          <div class="tcell" style="font-weight:600;color:var(--ink-faint);text-transform:uppercase;font-size:11px;">Instructor</div>
-          <div class="tcell" style="font-weight:600;color:var(--ink-faint);text-transform:uppercase;font-size:11px;">Amount</div>
-          <div class="tcell" style="font-weight:600;color:var(--ink-faint);text-transform:uppercase;font-size:11px;">Requested</div>
-          <div class="tcell" style="font-weight:600;color:var(--ink-faint);text-transform:uppercase;font-size:11px;">Status</div>
-          <div class="tcell"></div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:24px;" class="grid-3">
+          <div class="card" style="padding:20px;"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);" data-pay="gross">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Gross sales</div></div>
+          <div class="card" style="padding:20px;"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);" data-pay="orders">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Paid orders</div></div>
+          <div class="card" style="padding:20px;"><div style="font-size:24px;font-weight:700;font-family:var(--font-display);" data-pay="pending">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Abandoned checkouts</div></div>
         </div>
-        <div class="trow" data-payout-row style="grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;min-width:600px;">
-          <div class="tcell" style="font-weight:500;">Jordan Blake</div><div class="tcell">$1,240.00</div><div class="tcell" style="color:var(--ink-soft);">Sep 14, 2026</div>
-          <div class="tcell"><span class="badge badge-amber" data-payout-status>Pending</span></div>
-          <div class="tcell"><button class="btn btn-secondary" style="height:32px;font-size:12px;" data-payout-approve>Approve</button></div>
+        <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px;">Instructor payouts (85% of sales on their courses) are calculated in each instructor’s studio; paying them out is still a manual step.</p>
+        <div class="card admin-table" style="overflow:hidden;overflow-x:auto;">
+          <div class="trow" style="grid-template-columns:0.6fr 1.2fr 2fr 0.8fr 0.9fr 1fr;min-width:820px;background:var(--surface-alt);">
+            <div class="tcell label-caps">Order</div><div class="tcell label-caps">Customer</div><div class="tcell label-caps">Items</div>
+            <div class="tcell label-caps">Amount</div><div class="tcell label-caps">Status</div><div class="tcell label-caps">Date</div>
+          </div>
+          <div data-order-rows><div class="tcell" style="color:var(--ink-faint);">Loading…</div></div>
         </div>
-        <div class="trow" data-payout-row style="grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;min-width:600px;">
-          <div class="tcell" style="font-weight:500;">Maya Chen</div><div class="tcell">$2,860.00</div><div class="tcell" style="color:var(--ink-soft);">Sep 13, 2026</div>
-          <div class="tcell"><span class="badge badge-amber" data-payout-status>Pending</span></div>
-          <div class="tcell"><button class="btn btn-secondary" style="height:32px;font-size:12px;" data-payout-approve>Approve</button></div>
-        </div>
-        <div class="trow" data-payout-row style="grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;min-width:600px;">
-          <div class="tcell" style="font-weight:500;">Daniel Ortiz</div><div class="tcell">$940.00</div><div class="tcell" style="color:var(--ink-soft);">Sep 10, 2026</div>
-          <div class="tcell"><span class="badge badge-success" data-payout-status>Paid</span></div>
-          <div class="tcell"></div>
-        </div>
-        <div class="trow" data-payout-row style="grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;min-width:600px;">
-          <div class="tcell" style="font-weight:500;">Priya Nair</div><div class="tcell">$610.00</div><div class="tcell" style="color:var(--ink-soft);">Sep 8, 2026</div>
-          <div class="tcell"><span class="badge badge-success" data-payout-status>Paid</span></div>
-          <div class="tcell"></div>
-        </div>
-      </div>
       </div>
 
       <!-- REPORTS (catalog analytics) -->

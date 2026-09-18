@@ -2,15 +2,23 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "mock",
-      "runtimeExecutable": "node",
-      "runtimeArgs": ["scripts/mock-server.mjs"],
+      "name": "dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 8765
     },
     {
       "name": "netlify",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["netlify", "dev", "--port", "8888"],
+      "runtimeArgs": [
+        "netlify",
+        "dev",
+        "--port",
+        "8888"
+      ],
       "port": 8888
     }
   ]

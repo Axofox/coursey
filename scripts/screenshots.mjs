@@ -1,5 +1,5 @@
-// Regenerates docs/screenshots/*.png and docs/demo.webm from the mock server.
-// Usage: npm run mock (in another terminal) && node scripts/screenshots.mjs
+// Regenerates docs/screenshots/*.png and docs/demo.webm.
+// Usage: npm run dev (in another terminal) && node scripts/screenshots.mjs
 import { chromium } from "@playwright/test";
 
 const base = "http://localhost:8765";
@@ -10,15 +10,18 @@ const shots = [
   ["cart", "/cart.html", "light"],
   ["admin", "/admin-dashboard.html?tab=courses", "dark"],
   ["editor", "/course-upload.html?id=1", "light"],
+  ["dashboard", "/dashboard.html", "light"],
+  ["signup", "/signup.html", "dark"],
 ];
 
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
 const page = await ctx.newPage();
 await page.goto(base + "/");
+await page.request.post(base + "/__test/reset");
+await page.request.post(base + "/api/auth/signup", { data: { name: "Sam Lindqvist", email: "sam@example.com", password: "screenshot-pass-1" } }); // first account = admin
 await page.evaluate(() => {
   localStorage.setItem("coursehub-cart", JSON.stringify([{ key: "course-1", kind: "course", id: 1, title: "UX Foundations: Research to Wireframe", price: 49, subtitle: "Maya Chen", icon_bg: "#EDEBFB", href: "course-detail.html?id=1" }]));
-  sessionStorage.setItem("coursehub-admin-token", "testtoken");
 });
 for (const [name, path, theme] of shots) {
   await page.evaluate((t) => localStorage.setItem("coursehub-theme", t), theme);

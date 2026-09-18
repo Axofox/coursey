@@ -4,6 +4,11 @@
   var H = window.Coursehub;
   var form = document.querySelector("[data-apply-form]");
   if (!form) return;
+  H.session.get().then(function (u) {
+    if (!u) return;
+    if (u.role !== "learner") { location.replace("seller-dashboard.html"); return; }
+    form.name.value = u.name; form.email.value = u.email;
+  });
 
   form.addEventListener("submit", async function (e) {
     e.preventDefault();

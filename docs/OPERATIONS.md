@@ -11,7 +11,7 @@ Three ways to run it, from lightest to most realistic:
 
 | Command | What you get | Needs |
 |---------|--------------|-------|
-| `npm run mock` | Frontend at http://localhost:8765 on an in-memory API. Admin token `testtoken`. Data resets on restart (or `POST /api/_reset`). | nothing |
+| `npm run dev` | The real API + frontend at http://localhost:8765 on a throwaway embedded Postgres. Stripe is stubbed (checkout "pays" instantly), emails are captured at `/__test/mail`. First signup is admin; admin token `testtoken`. | nothing |
 | `npm run test:integration` | Migrations + API against a throwaway embedded Postgres | nothing (downloads a Postgres binary on first run) |
 | `npx netlify dev` | The real function + your own database at http://localhost:8888 | `.env` with `DATABASE_URL` and `ADMIN_TOKEN` |
 
@@ -22,7 +22,7 @@ Three ways to run it, from lightest to most realistic:
 - A fresh database is seeded by the migration step with the catalog from
   `netlify/lib/seed.mjs` (6 categories, 8 courses, 3 bundles). Seeding only
   happens when `categories` is empty, so it never touches a live catalog.
-- The mock server and the e2e tests use the same seed plus one pending review.
+- The dev server and the e2e tests use the same seed; accounts are created per test.
 - Integration tests create their own rows and clean up; they never run
   against `DATABASE_URL` unless you set it explicitly (CI points it at a
   service container).
@@ -32,7 +32,18 @@ Three ways to run it, from lightest to most realistic:
 | Name | Set in | Notes |
 |------|--------|-------|
 | `DATABASE_URL` | Netlify env vars (all scopes), `.env` | Neon **pooled** connection string. Needed at build time for migrations and at runtime for the function. |
-| `ADMIN_TOKEN` | Netlify env vars, `.env` | Rotating it = change the variable, trigger a deploy, sign in again. |
+| `ADMIN_TOKEN` | Netlify env vars, `.env` | Break-glass admin + bootstrap. Once an admin account exists you can unset it. |
+| `STRIPE_SECRET_KEY` | Netlify env vars | From Stripe → Developers → API keys. Test keys until launch. |
+| `STRIPE_WEBHOOK_SECRET` | Netlify env vars | Stripe → Developers → Webhooks → *Add endpoint* `https://<site>/api/stripe/webhook`, event `checkout.session.completed` → copy the signing secret. |
+| `RESEND_API_KEY`, `MAIL_FROM` | Netlify env vars | Resend → API keys. `MAIL_FROM` like `Coursehub <hello@yourdomain>` (domain verified in Resend). Unset = emails are only logged. |
+| `SITE_URL` | Netlify env vars | `https://cupcourse.netlify.app` — used in email links and Stripe return URLs. |
+
+### Making yourself admin
+
+The first account created on an empty `users` table is the admin. On a site
+that already has users, sign up with the break-glass token:
+`curl -X POST $SITE/api/auth/signup -H "Authorization: Bearer $ADMIN_TOKEN" -H "content-type: application/json" -d '{"name":"…","email":"…","password":"…"}'`
+— or change a role in Admin → Learners while signed in with the token.
 
 Changing an env var on Netlify requires a new deploy to reach the function.
 
@@ -111,6 +122,8 @@ database) and redeploy.
 
 ## Monitoring (not yet set up)
 
-Recommended, in order: Netlify function logs + an uptime check on
-`/api/stats` (any free pinger), then error tracking (e.g. Sentry's Netlify
-integration) once accounts and payments exist.
+`GET /api/health` returns `{"ok":true}` without touching the database; point
+any uptime pinger at it and at `/api/stats` (which does). Netlify → Functions
+→ api shows logs, including every `[mail]` line and webhook decision
+(`ignored: amount mismatch` etc.). Next: error tracking (Sentry's Netlify
+integration) and a Stripe webhook-failure alert in the Stripe dashboard.

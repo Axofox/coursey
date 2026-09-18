@@ -184,6 +184,9 @@ export async function categories(ctx, id) {
 
 /* ---------- Courses ---------- */
 
+// Editorial picks and the manual statistics are the admin's call.
+const ADMIN_ONLY = ["featured", "badge", "rating", "rating_count", "students"];
+
 // Instructors can save drafts and submit for review; only admins publish.
 function statusFor(ctx, fields, existing) {
   if (fields.status === undefined) return undefined;
@@ -236,7 +239,7 @@ export async function courses(ctx, id) {
       if (!ctx.admin) {
         fields.owner_id = ctx.user.id;
         fields.instructor_name = fields.instructor_name || ctx.user.name;
-        delete fields.featured; // editorial pick is the admin's call
+        ADMIN_ONLY.forEach((k) => delete fields[k]);
       } else if (body.owner_id !== undefined) {
         fields.owner_id = body.owner_id === null ? null : Number(body.owner_id);
       }
@@ -268,7 +271,7 @@ export async function courses(ctx, id) {
       const status = statusFor(ctx, fields, existing);
       delete fields.status;
       if (status !== undefined) fields.status = status;
-      if (!ctx.admin) delete fields.featured;
+      if (!ctx.admin) ADMIN_ONLY.forEach((k) => delete fields[k]);
       else if (body.owner_id !== undefined) fields.owner_id = body.owner_id === null ? null : Number(body.owner_id);
       const keys = Object.keys(fields);
       if (!keys.length) return error("Nothing to update", 400);
