@@ -172,7 +172,7 @@ describe("API against the real database", () => {
     const token = decodeURIComponent(/token=([^\s&]+)/.exec(mail.text)[1]);
     assert.equal((await call("POST", "/api/auth/reset", { body: { token, password: "ana-password-2" } })).status, 204);
     assert.equal((await call("POST", "/api/auth/reset", { body: { token, password: "ana-password-3" } })).status, 400); // used
-    assert.equal((await call("GET", "/api/auth/me", { as: "ana2" })).status, 401); // old session gone
+    assert.equal((await call("GET", "/api/auth/me", { as: "ana2" })).body, null); // old session gone
     assert.equal((await call("POST", "/api/auth/login", { as: "ana", body: { email: "ana@example.com", password: "ana-password-2" } })).status, 200);
   });
 

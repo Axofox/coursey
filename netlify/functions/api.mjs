@@ -96,7 +96,8 @@ export function createHandler({ query = dbQuery, mailer = sendMail, stripe } = {
     const isPublic =
       (req.method === "GET" && PUBLIC_GET.includes(resource)) ||
       (req.method === "POST" && resource === "applications" && id === undefined) ||
-      (req.method === "POST" && resource === "auth" && PUBLIC_POST.auth.includes(id));
+      (req.method === "POST" && resource === "auth" && PUBLIC_POST.auth.includes(id)) ||
+      (req.method === "GET" && resource === "auth" && id === "me"); // answers null when signed out
     if (!isPublic && !user && !admin) return error("Unauthorized", 401);
     if (req.method === "POST" && ["applications", "reviews"].includes(resource) && id === undefined && !admin && rateLimited("write", ip)) {
       return error("Too many submissions — try again later", 429);

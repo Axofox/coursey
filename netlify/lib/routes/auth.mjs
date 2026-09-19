@@ -3,7 +3,7 @@
     POST signup   { name, email, password }            → 201 user, sets cookie
     POST login    { email, password }                  → 200 user, sets cookie
     POST logout                                        → 204, clears cookie
-    GET  me                                            → user or 401
+    GET  me                                            → user, or null when signed out
     PUT  me       { name?, headline?, bio? }           → user
     PUT  password { current, password }                → 204
     POST forgot   { email }                            → 204 always (no account enumeration)
@@ -24,7 +24,8 @@ export async function auth(ctx, action) {
 
   if (action === "check" && m === "GET") return ctx.admin ? noContent() : error("Unauthorized", 401);
 
-  if (action === "me" && m === "GET") return ctx.user ? json(publicUser(ctx.user)) : error("Unauthorized", 401);
+  // Signed-out is a normal state for this probe, not an error (keeps browser consoles clean)
+  if (action === "me" && m === "GET") return json(ctx.user ? publicUser(ctx.user) : null);
 
   if (action === "logout" && m === "POST") {
     await destroySession(query, req);

@@ -353,7 +353,9 @@ describe("accounts", () => {
     const { hashPassword } = await import("../netlify/lib/auth.mjs");
     LEARNER.password_hash = await hashPassword("old-horse-123");
     const { handler, db } = handlerWith([[/UPDATE users SET name/, [{ ...LEARNER, name: "Ana B." }]]]);
-    assert.equal((await call(handler, "GET", "/api/auth/me")).status, 401);
+    const anon = await call(handler, "GET", "/api/auth/me");
+    assert.equal(anon.status, 200);
+    assert.equal(anon.body, null);
     assert.equal((await call(handler, "GET", "/api/auth/me", { as: "learner" })).body.email, "ana@example.com");
     assert.equal((await call(handler, "PUT", "/api/auth/me", { as: "learner", body: { name: "Ana B." } })).body.name, "Ana B.");
     assert.equal((await call(handler, "PUT", "/api/auth/password", { as: "learner", body: { current: "nope", password: "new-horse-123" } })).status, 401);
