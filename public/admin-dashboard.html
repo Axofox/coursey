@@ -284,6 +284,11 @@
       <!-- REPORTS (catalog analytics) -->
       <div data-tab-group="admin" data-tab-panel="reports" class="hide">
         <p style="font-size:14px;color:var(--ink-soft);margin-bottom:20px;">Live numbers from the catalog. Sales and learner analytics arrive with checkout and accounts.</p>
+        <div class="card" style="padding:24px;margin-bottom:24px;" data-experiment>
+          <h3 style="font-size:15px;margin-bottom:4px;">Learner setup experiment</h3>
+          <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px;">Courses with the learner-setup flag vs. the rest of the catalog, from the same tables the product runs on.</p>
+          <div data-experiment-body><span style="font-size:13px;color:var(--ink-faint);">Loading…</span></div>
+        </div>
         <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;" class="grid-2" data-reports>
           <div class="card" style="padding:24px;"><h3 style="font-size:15px;margin-bottom:14px;">Published courses by category</h3><div data-report="by-category"></div></div>
           <div class="card" style="padding:24px;"><h3 style="font-size:15px;margin-bottom:14px;">Courses by level</h3><div data-report="by-level"></div></div>

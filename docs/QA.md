@@ -59,23 +59,25 @@ Likelihood × impact, current mitigation, and what closes the gap.
 
 L/I: Low · Medium · High.
 
-## Test report — 2026-09-18
+## Test report — 2026-09-19
 
-Branch `feat/accounts`, Node 24.18, macOS (local) and Ubuntu (CI).
+Branch `feat/learner-setup`, Node 24.18, macOS (local) and Ubuntu (CI).
 
 | Suite | Tests | Pass | Fail | Time |
 |-------|------:|-----:|-----:|-----:|
 | Unit — routing, auth gate, roles, validation, abuse protection, accounts, checkout pricing, webhook signatures | 43 | 43 | 0 | 0.5 s |
+| Unit — learner setup: plan builder (light/heavy, reviews, track fallback), question ordering, grading, streaks, nudges, route gating | 12 | 12 | 0 | <0.1 s |
 | Unit — seed integrity | 3 | 3 | 0 | <0.1 s |
 | Unit — browser helpers | 11 | 11 | 0 | <0.1 s |
 | Integration — migrations (fresh, idempotent, legacy upgrade incl. the `published` → `status` conversion) | 3 | 3 | 0 | 3 s |
-| Integration — API on Postgres: catalog, lifecycle, accounts + sessions, password reset, reviews→rating, **checkout → webhook → enrolment**, progress → certificate, instructor approval → pending → publish, bundles, applications, cascades | 12 | 12 | 0 | 0.8 s |
+| Integration — API on Postgres: catalog, lifecycle, accounts + sessions, password reset, reviews→rating, **checkout → webhook → enrolment**, progress → certificate, instructor approval → pending → publish, bundles, applications, cascades, **learner setup → plan → quiz → review → settings change → experiment** | 13 | 13 | 0 | 0.9 s |
 | E2E — catalog (chromium + mobile) | 12 | 12 | 0 | |
 | E2E — course / cart / lesson / bundle (chromium + mobile) | 12 | 12 | 0 | |
 | E2E — accounts: signup, login + `?next`, reset via emailed link, **buy → learn → certificate**, free enrol + gating, review gating | 6 | 6 | 0 | |
 | E2E — instructors: apply → approve → create → review queue → publish | 1 | 1 | 0 | |
 | E2E — admin: account sign-in (+ break-glass), courses, categories, moderation, bundles, editor | 6 | 6 | 0 | |
-| **Total** | **109** | **109** | **0** | ~50 s |
+| E2E — learner setup: unflagged course untouched, character-select → plan → grading → spaced review, settings from the dashboard, admin report + authoring | 4 | 4 | 0 | |
+| **Total** | **126** | **126** | **0** | ~55 s |
 
 E2E runs against the real API and a real (embedded) Postgres through
 `scripts/dev-server.mjs`; Stripe is replaced by a stub that signs a genuine
@@ -90,6 +92,7 @@ Defects found and fixed while building the suites (all now covered):
 7. Parallel Playwright workers reset the shared database under each other → `workers: 1`.
 8. The signed-out account menu overflowed the phone-width nav, widening the page so mobile clicks missed → nav trimmed at ≤600px, columns constrained to 100% (found by a failing mobile e2e).
 9. Cart badge lost its `display:flex` when shown → class toggle; hero badge flashed placeholder text → hidden until the live count arrives.
+10. Editor's top-bar "Save draft" silently unpublished an already-published course → "Save changes" keeps the status; found while testing question authoring on the live test course.
 5. Editor spec assumed the publish button is visible on step 1 → test now navigates the stepper like a user.
 6. Old cart entries (pre-bundle format) had no `key` and rendered as `undefined` → filtered on read; unit test.
 

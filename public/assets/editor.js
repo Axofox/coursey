@@ -86,8 +86,10 @@
     if (el.classList.contains("switch")) el.setAttribute("aria-pressed", String(!!value));
     else el.value = value == null ? "" : value;
   }
-  field("featured").addEventListener("click", function () {
-    this.setAttribute("aria-pressed", String(this.getAttribute("aria-pressed") !== "true"));
+  ["featured", "learner_setup"].forEach(function (name) {
+    field(name).addEventListener("click", function () {
+      this.setAttribute("aria-pressed", String(this.getAttribute("aria-pressed") !== "true"));
+    });
   });
 
   // Level pills: script.js handles the active class; we just read it
@@ -157,6 +159,33 @@
             "</div>";
           }).join("") +
           '<button type="button" class="btn btn-secondary btn-sm" style="align-self:flex-start;margin-top:4px;" data-add-lesson>+ Add lesson</button>' +
+          '<details style="margin-top:10px;"><summary style="cursor:pointer;font-size:13px;font-weight:600;">Checkpoint questions (' + (s.quiz || []).length + ") &amp; exercises (" + (s.exercises || []).length + ")</summary>" +
+            '<p style="font-size:12px;color:var(--ink-faint);margin:8px 0;">Used by courses with learner setup: checkpoints are served after this section; exercises are shown by goal track.</p>' +
+            '<div style="display:flex;flex-direction:column;gap:10px;" data-quiz-list>' +
+              (s.quiz || []).map(function (q, qi) {
+                return '<div style="border:1px dashed var(--border-strong);border-radius:10px;padding:10px;" data-question="' + qi + '">' +
+                  '<div class="lesson-row"><input class="input" type="text" placeholder="Question" value="' + esc(q.prompt) + '" data-q-prompt><button type="button" class="iconbtn" aria-label="Remove question" data-remove-question>' + X + "</button></div>" +
+                  '<div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">' + q.options.map(function (o, oi) {
+                    return '<label style="display:flex;gap:8px;align-items:center;margin:0;font-weight:400;"><input type="radio" name="ans-' + si + "-" + qi + '" value="' + oi + '"' + (q.answer === oi ? " checked" : "") + ' data-q-answer title="Correct answer"><input class="input" type="text" style="height:34px;font-size:13px;" placeholder="Option ' + (oi + 1) + '" value="' + esc(o) + '" data-q-option="' + oi + '"></label>';
+                  }).join("") + "</div>" +
+                  '<div class="lesson-row" style="margin-top:6px;"><input class="input" type="text" style="height:34px;font-size:13px;" placeholder="Explanation shown after answering (optional)" value="' + esc(q.explanation || "") + '" data-q-explain>' +
+                  (q.options.length < 6 ? '<button type="button" class="btn btn-secondary btn-sm" style="height:34px;" data-add-option>+ Option</button>' : "") + "</div>" +
+                "</div>";
+              }).join("") +
+            "</div>" +
+            '<button type="button" class="btn btn-secondary btn-sm" style="margin-top:8px;" data-add-question>+ Add question</button>' +
+            '<div style="display:flex;flex-direction:column;gap:10px;margin-top:14px;" data-exercise-list>' +
+              (s.exercises || []).map(function (ex, ei) {
+                return '<div style="border:1px dashed var(--border-strong);border-radius:10px;padding:10px;" data-exercise="' + ei + '">' +
+                  '<div class="lesson-row"><input class="input" type="text" placeholder="Exercise title" value="' + esc(ex.title) + '" data-ex-title>' +
+                  '<select class="input" style="width:150px;flex-grow:0;" data-ex-track>' + ["all", "job_ready", "project", "exploring"].map(function (t) { return '<option value="' + t + '"' + (ex.track === t ? " selected" : "") + ">" + { all: "All tracks", job_ready: "Job-ready", project: "Project builder", exploring: "Exploring" }[t] + "</option>"; }).join("") + "</select>" +
+                  '<button type="button" class="iconbtn" aria-label="Remove exercise" data-remove-exercise>' + X + "</button></div>" +
+                  '<textarea class="input" rows="2" style="margin-top:6px;font-size:13px;" placeholder="What the learner should do" data-ex-body>' + esc(ex.body || "") + "</textarea>" +
+                "</div>";
+              }).join("") +
+            "</div>" +
+            '<button type="button" class="btn btn-secondary btn-sm" style="margin-top:8px;" data-add-exercise>+ Add exercise</button>' +
+          "</details>" +
         "</div></div>";
     }).join("") || '<p style="font-size:13px;color:var(--ink-faint);">No sections yet — add the first one.</p>';
 
@@ -173,6 +202,27 @@
         var rows = wrap.querySelectorAll('[data-section="' + si + '"] [data-lesson-title]');
         rows[rows.length - 1].focus();
       });
+      var sec = sections[si];
+      sec.quiz = sec.quiz || []; sec.exercises = sec.exercises || [];
+      el.querySelector("[data-add-question]").addEventListener("click", function () { sec.quiz.push({ prompt: "", options: ["", ""], answer: 0, explanation: "" }); renderSections(); openDetails(si); });
+      el.querySelector("[data-add-exercise]").addEventListener("click", function () { sec.exercises.push({ title: "", body: "", track: "all" }); renderSections(); openDetails(si); });
+      el.querySelectorAll("[data-question]").forEach(function (qEl) {
+        var qi = Number(qEl.dataset.question), q = sec.quiz[qi];
+        qEl.querySelector("[data-q-prompt]").addEventListener("input", function () { q.prompt = this.value; });
+        qEl.querySelector("[data-q-explain]").addEventListener("input", function () { q.explanation = this.value; });
+        qEl.querySelectorAll("[data-q-option]").forEach(function (inp) { inp.addEventListener("input", function () { q.options[Number(inp.dataset.qOption)] = inp.value; }); });
+        qEl.querySelectorAll("[data-q-answer]").forEach(function (r) { r.addEventListener("change", function () { q.answer = Number(r.value); }); });
+        qEl.querySelector("[data-remove-question]").addEventListener("click", function () { sec.quiz.splice(qi, 1); renderSections(); openDetails(si); });
+        var addOpt = qEl.querySelector("[data-add-option]");
+        if (addOpt) addOpt.addEventListener("click", function () { q.options.push(""); renderSections(); openDetails(si); });
+      });
+      el.querySelectorAll("[data-exercise]").forEach(function (xEl) {
+        var ei = Number(xEl.dataset.exercise), ex = sec.exercises[ei];
+        xEl.querySelector("[data-ex-title]").addEventListener("input", function () { ex.title = this.value; });
+        xEl.querySelector("[data-ex-body]").addEventListener("input", function () { ex.body = this.value; });
+        xEl.querySelector("[data-ex-track]").addEventListener("change", function () { ex.track = this.value; });
+        xEl.querySelector("[data-remove-exercise]").addEventListener("click", function () { sec.exercises.splice(ei, 1); renderSections(); openDetails(si); });
+      });
       el.querySelectorAll("[data-lesson]").forEach(function (row) {
         var li = Number(row.dataset.lesson);
         row.querySelector("[data-lesson-title]").addEventListener("input", function () { sections[si].lessons[li].title = this.value; });
@@ -183,6 +233,7 @@
       });
     });
   }
+  function openDetails(si) { var d = $('[data-section="' + si + '"] details'); if (d) d.open = true; }
   $("[data-add-section]").addEventListener("click", function () {
     sections.push({ title: "", lessons: [] });
     renderSections();
@@ -233,8 +284,14 @@
       learn: lists.learn.map(function (s) { return s.trim(); }).filter(Boolean),
       requirements: lists.requirements.map(function (s) { return s.trim(); }).filter(Boolean),
       curriculum: sections
-        .map(function (s) { return { title: s.title.trim(), lessons: s.lessons.filter(function (l) { return l.title.trim(); }) }; })
+        .map(function (s) { return {
+          title: s.title.trim(),
+          lessons: s.lessons.filter(function (l) { return l.title.trim(); }),
+          quiz: (s.quiz || []).filter(function (q) { return q.prompt.trim(); }).map(function (q) { return { prompt: q.prompt, options: q.options.filter(function (o) { return o.trim(); }), answer: q.answer, explanation: q.explanation }; }),
+          exercises: (s.exercises || []).filter(function (e) { return e.title.trim(); }),
+        }; })
         .filter(function (s) { return s.title; }),
+      features: { learner_setup: getField("learner_setup") },
     };
   }
 
@@ -249,8 +306,14 @@
     lists.learn = (c.learn || []).slice();
     lists.requirements = (c.requirements || []).slice();
     sections = (c.curriculum || []).map(function (s) {
-      return { title: s.title, lessons: (s.lessons || []).map(function (l) { return { title: l.title, duration: l.duration || "", video_url: l.video_url || "", preview: !!l.preview }; }) };
+      return {
+        title: s.title,
+        lessons: (s.lessons || []).map(function (l) { return { title: l.title, duration: l.duration || "", video_url: l.video_url || "", preview: !!l.preview }; }),
+        quiz: (s.quiz || []).map(function (q) { return { prompt: q.prompt, options: q.options.slice(), answer: q.answer, explanation: q.explanation || "" }; }),
+        exercises: (s.exercises || []).map(function (e) { return { title: e.title, body: e.body || "", track: e.track || "all" }; }),
+      };
     });
+    setField("learner_setup", !!(c.features && c.features.learner_setup));
     renderList("learn"); renderList("requirements"); renderSections(); updateThumb();
   }
 
@@ -274,6 +337,15 @@
       resources: H.rules.number(0, undefined, "Resources"),
     });
     var curriculumOk = true;
+    sections.forEach(function (sec, si) {
+      (sec.quiz || []).forEach(function (q, qi) {
+        if (!q.prompt.trim()) return;
+        var opts = q.options.filter(function (o) { return o.trim(); });
+        var qEl = document.querySelector('[data-section="' + si + '"] [data-question="' + qi + '"]');
+        var bad = opts.length < 2 ? "Add at least two options." : !q.options[q.answer] || !q.options[q.answer].trim() ? "Mark the correct answer." : "";
+        if (bad) { curriculumOk = false; if (qEl) { qEl.style.borderColor = "var(--danger)"; qEl.title = bad; openDetails(si); } }
+      });
+    });
     document.querySelectorAll("[data-lesson]").forEach(function (row) {
       var msgs = [];
       var d = row.querySelector("[data-lesson-duration]").value.trim();
@@ -291,7 +363,14 @@
     return 0;
   }
 
+  var currentStatus = null; // status of the course being edited (null = new)
+  function labelTopButton() {
+    var b = document.querySelector("[data-save-changes]");
+    if (b) b.textContent = currentStatus === "published" ? "Save changes" : "Save draft";
+  }
+
   var saving = false;
+  // published: true → publish/submit, false → draft, null → keep the current status
   async function save(published) {
     if (saving) return;
     var badStep = validateAll();
@@ -300,7 +379,7 @@
       return showError("Please fix the highlighted field" + (badStep === 2 ? "s in the curriculum" : "") + " (step " + badStep + ").");
     }
     var data = collect();
-    data.published = published;
+    if (published !== null) data.published = published;
     saving = true;
     showError("");
     try {
@@ -310,11 +389,13 @@
         history.replaceState(null, "", "course-upload.html?id=" + courseId);
         $("[data-editor-title]").textContent = "Edit “" + saved.title + "”";
       }
+      currentStatus = saved.status;
+      labelTopButton();
       if (published && saved.status === "pending") {
         notify("“" + saved.title + "” was submitted for review.");
         setTimeout(function () { location.href = "seller-dashboard.html"; }, 900);
       } else {
-        notify(published ? "“" + saved.title + "” is live." : "Draft saved.");
+        notify(published ? "“" + saved.title + "” is live." : published === null ? "Changes saved." : "Draft saved.");
         if (published) setTimeout(function () { location.href = "course-detail.html?id=" + courseId; }, 900);
       }
     } catch (e) {
@@ -325,6 +406,8 @@
     }
   }
   document.querySelectorAll("[data-save-draft]").forEach(function (b) { b.addEventListener("click", function () { save(false); }); });
+  var topSave = document.querySelector("[data-save-changes]");
+  if (topSave) topSave.addEventListener("click", function () { save(currentStatus === "published" ? null : false); });
   $("[data-publish]").addEventListener("click", function () { save(true); });
 
   function applyRole() {
@@ -354,6 +437,8 @@
       try {
         var c = await H.api.course(courseId);
         $("[data-editor-title]").textContent = "Edit “" + c.title + "”";
+        currentStatus = c.status;
+        labelTopButton();
         document.title = "Edit " + c.title + " — Coursehub";
         populate(c);
       } catch (e) {

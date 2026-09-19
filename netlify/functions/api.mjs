@@ -20,6 +20,7 @@ import { reviews, applications } from "../lib/routes/reviews.mjs";
 import * as learning from "../lib/routes/learning.mjs";
 import { checkout, stripeWebhook } from "../lib/routes/checkout.mjs";
 import { users } from "../lib/routes/users.mjs";
+import { learn, events, experiment, logEvent, flagOn } from "../lib/routes/learn.mjs";
 
 export const config = { path: "/api/*" };
 
@@ -57,10 +58,11 @@ function notifier(siteUrl, mailer) {
 export function createHandler({ query = dbQuery, mailer = sendMail, stripe } = {}) {
   return async function handler(req, context) {
     const url = new URL(req.url);
-    const [, , resource, id, extra] = url.pathname.split("/"); // ["", "api", resource, id?]
-    if (extra !== undefined) return error("Not found", 404);
+    const [, , resource, id, action, extra] = url.pathname.split("/"); // ["", "api", resource, id?, action?]
+    if (extra !== undefined || (action !== undefined && resource !== "learn")) return error("Not found", 404);
     const KNOWN = ["auth", "categories", "courses", "bundles", "stats", "reviews", "applications",
-                   "me", "enrol", "progress", "certificates", "orders", "checkout", "users", "stripe", "health"];
+                   "me", "enrol", "progress", "certificates", "orders", "checkout", "users", "stripe", "health",
+                   "learn", "events", "experiment"];
     if (!KNOWN.includes(resource)) return error("Not found", 404);
     if (resource === "health") return json({ ok: true });
 
@@ -120,6 +122,9 @@ export function createHandler({ query = dbQuery, mailer = sendMail, stripe } = {
         case "orders": return await learning.orders(ctx, id);
         case "checkout": return id === undefined ? await checkout(ctx) : error("Not found", 404);
         case "users": return await users(ctx, id);
+        case "learn": return await learn(ctx, id, action);
+        case "events": return id === undefined ? await events(ctx) : error("Not found", 404);
+        case "experiment": return id === undefined ? await experiment(ctx) : error("Not found", 404);
         default: return error("Not found", 404);
       }
     } catch (e) {

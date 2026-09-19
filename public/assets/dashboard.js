@@ -10,7 +10,7 @@
   var fmtDate = function (iso) { return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }); };
   var statusOf = function (c) { return c.progress_pct >= 100 ? "Completed" : c.completed_lessons > 0 ? "In progress" : "Not started"; };
   var badgeFor = { "Completed": "badge-success", "In progress": "badge-accent", "Not started": "badge-neutral" };
-  var resumeHref = function (c) { return "lesson.html?course=" + c.id; };
+  var resumeHref = function (c) { return "lesson.html?course=" + c.id; }; // plan mode redirects to setup when needed
 
   /* ---------- Overview ---------- */
   function renderOverview() {
@@ -117,6 +117,59 @@
     }).join("") || '<div style="padding:32px 20px;color:var(--ink-faint);font-size:14px;">No purchases yet.</div>';
   }
 
+  /* ---------- Learner setup: nudges + per-course settings ---------- */
+  var learnStates = {}; // course id → /api/learn state
+  async function loadLearnStates() {
+    var flagged = courses.filter(function (c) { return c.features && c.features.learner_setup; });
+    await Promise.all(flagged.map(async function (c) {
+      try { learnStates[c.id] = await H.api.learn(c.id); } catch (e) {}
+    }));
+    renderNudges(flagged);
+    initLearnForm(flagged);
+  }
+  function renderNudges(flagged) {
+    var box = $("[data-nudges]");
+    box.innerHTML = flagged.map(function (c) {
+      var st = learnStates[c.id];
+      if (!st) return "";
+      if (!st.settings) return '<div class="notice" style="display:flex;justify-content:space-between;gap:12px;align-items:center;"><span>\u201C' + esc(c.title) + '\u201D is waiting for your setup.</span><a class="btn btn-primary btn-sm" href="setup.html?course=' + c.id + '">Set up & start</a></div>';
+      if (!st.nudge) return "";
+      return '<div class="notice" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;' + (st.nudge.tone === "done" ? "background:var(--success-tint);color:var(--success);" : "") + '">' +
+        "<span><strong>" + esc(c.title) + ":</strong> " + esc(st.nudge.text) + "</span>" +
+        '<span style="display:flex;gap:10px;align-items:center;">' + (st.streak.streak ? '<span class="streak-pill">\uD83D\uDD25 ' + st.streak.streak + "-day streak</span>" : "") +
+        (st.nudge.tone === "due" ? '<a class="btn btn-primary btn-sm" href="lesson.html?course=' + c.id + '">Do today\u2019s lesson</a>' : "") + "</span></div>";
+    }).join("");
+    flagged.forEach(function (c) { if (learnStates[c.id] && learnStates[c.id].nudge) H.api.event("nudge_shown", c.id, { tone: learnStates[c.id].nudge.tone, where: "dashboard" }); });
+  }
+  function initLearnForm(flagged) {
+    var f = $("[data-learn-form]");
+    var withSetup = flagged.filter(function (c) { return learnStates[c.id] && learnStates[c.id].settings; });
+    if (!withSetup.length) { f.classList.add("hide"); return; }
+    f.classList.remove("hide");
+    var opts = learnStates[withSetup[0].id].options;
+    var fill = function (name) {
+      f[name].innerHTML = Object.keys(opts[name]).map(function (k) { var o = opts[name][k]; return '<option value="' + k + '"' + (o.stub ? " disabled" : "") + ">" + esc(o.label) + " \u2014 " + esc(o.tagline) + "</option>"; }).join("");
+    };
+    fill("pace"); fill("practice"); fill("track");
+    f.course.innerHTML = withSetup.map(function (c) { return '<option value="' + c.id + '">' + esc(c.title) + "</option>"; }).join("");
+    var sync = function () {
+      var st = learnStates[Number(f.course.value)];
+      f.pace.value = st.settings.pace; f.practice.value = st.settings.practice; f.track.value = st.settings.track;
+      $("[data-learn-setup-link]").href = "setup.html?course=" + f.course.value;
+    };
+    f.course.addEventListener("change", sync);
+    sync();
+    f.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var id = Number(f.course.value);
+      try {
+        learnStates[id] = await H.api.learnSettings(id, { pace: f.pace.value, practice: f.practice.value, track: f.track.value });
+        H.toast("Learning setup saved for \u201C" + withSetup.find(function (c) { return c.id === id; }).title + "\u201D.");
+        renderNudges(flagged);
+      } catch (err) { var b = $("[data-learn-error]"); b.textContent = err.message; b.classList.remove("hide"); }
+    });
+  }
+
   /* ---------- Settings ---------- */
   function initSettings() {
     var pf = $("[data-profile-form]"), pwf = $("[data-password-form]");
@@ -155,7 +208,7 @@
     if (!me) return H.session.requireLogin("dashboard.html" + location.search);
     fillMe();
     courses = await H.api.myCourses().catch(function () { return []; });
-    renderOverview(); renderCourses(); renderCertificates(); renderWishlist(); renderOrders(); initSettings();
+    renderOverview(); renderCourses(); renderCertificates(); renderWishlist(); renderOrders(); initSettings(); loadLearnStates();
     var wanted = H.getParam("tab");
     var target = wanted && document.querySelector('[data-tab-group="dashboard"][data-tab="' + wanted + '"]');
     if (target) target.click();

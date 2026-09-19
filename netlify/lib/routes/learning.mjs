@@ -13,6 +13,7 @@
 import { json, error, readBody, bodyError, idOr404 } from "../http.mjs";
 import { newToken } from "../auth.mjs";
 import { listCourses, getCourseRow, isEnrolled } from "./catalog.mjs";
+import { logEvent, flagOn } from "./learn.mjs";
 
 const lessonCount = (curriculum) => (curriculum || []).reduce((n, s) => n + (s.lessons || []).length, 0);
 
@@ -20,11 +21,12 @@ export async function issueCertificateIfComplete(query, userId, courseId, notify
   const course = await getCourseRow(query, courseId);
   const total = lessonCount(course && course.curriculum);
   if (!total) return null;
-  const { rows } = await query("SELECT count(*)::int AS n FROM lesson_progress WHERE user_id = $1 AND course_id = $2", [userId, courseId]);
+  const { rows } = await query("SELECT count(*)::int AS n FROM lesson_progress WHERE user_id = $1 AND course_id = $2 AND lesson_idx >= 0", [userId, courseId]);
   if (rows[0].n < total) return null;
   const { rows: cert } = await query(
     `INSERT INTO certificates (id, user_id, course_id) VALUES ($1, $2, $3)
-     ON CONFLICT (user_id, course_id) DO UPDATE SET user_id = EXCLUDED.user_id RETURNING *`,
+     ON CONFLICT (user_id, course_id) DO UPDATE SET user_id = EXCLUDED.user_id
+     RETURNING *, (xmax = 0) AS fresh`,
     [newToken().slice(0, 20), userId, courseId]
   );
   return cert[0];
@@ -41,7 +43,7 @@ export async function me(ctx, what) {
       if (!enr.length) return json([]);
       const courses = await listCourses(query, { all: true, ids: enr.map((e) => e.course_id) });
       const { rows: prog } = await query(
-        "SELECT course_id, count(*)::int AS done FROM lesson_progress WHERE user_id = $1 GROUP BY course_id", [user.id]);
+        "SELECT course_id, count(*)::int AS done FROM lesson_progress WHERE user_id = $1 AND lesson_idx >= 0 GROUP BY course_id", [user.id]);
       const { rows: certs } = await query("SELECT course_id, id FROM certificates WHERE user_id = $1", [user.id]);
       const doneBy = new Map(prog.map((p) => [p.course_id, p.done]));
       const certBy = new Map(certs.map((c) => [c.course_id, c.id]));
@@ -107,8 +109,9 @@ export async function enrol(ctx) {
   const course = await getCourseRow(query, courseId);
   if (!course || !course.published) return error("Course not found", 404);
   if (course.price > 0) return error("This course is paid — use checkout", 402);
-  await query("INSERT INTO enrolments (user_id, course_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", [user.id, courseId]);
-  return json({ enrolled: true }, 201);
+  const res = await query("INSERT INTO enrolments (user_id, course_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", [user.id, courseId]);
+  if (res.rowCount) await logEvent(query, "enrolled", { userId: user.id, courseId, props: { via: "free", flag: flagOn(course) } });
+  return json({ enrolled: true, needs_setup: flagOn(course) }, 201);
 }
 
 export async function progress(ctx) {
@@ -134,8 +137,10 @@ export async function progress(ctx) {
       [user.id, courseId, s, l]
     );
   }
-  const cert = await issueCertificateIfComplete(query, user.id, courseId);
-  const { rows } = await query("SELECT count(*)::int AS n FROM lesson_progress WHERE user_id = $1 AND course_id = $2", [user.id, courseId]);
+  const cert = await issueCertificateIfComplete(query, user.id, courseId, (issued) => issued);
+  const { rows } = await query("SELECT count(*)::int AS n FROM lesson_progress WHERE user_id = $1 AND course_id = $2 AND lesson_idx >= 0", [user.id, courseId]);
+  await logEvent(query, "lesson_completed", { userId: user.id, courseId, props: { section: s, lesson: l, flag: flagOn(course) } });
+  if (cert && cert.fresh) await logEvent(query, "course_completed", { userId: user.id, courseId, props: { flag: flagOn(course) } });
   return json({ completed_lessons: rows[0].n, total_lessons: lessonCount(course.curriculum), certificate_id: cert ? cert.id : null });
 }
 

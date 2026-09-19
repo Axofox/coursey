@@ -10,7 +10,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { SEED_CATEGORIES, SEED_COURSES, SEED_BUNDLES } from "./seed.mjs";
+import { SEED_CATEGORIES, SEED_COURSES, SEED_BUNDLES, TEST_COURSE_TITLE, withTestCourseContent } from "./seed.mjs";
 
 const MIGRATIONS_DIR = fileURLToPath(new URL("../../migrations/", import.meta.url));
 
@@ -49,6 +49,7 @@ export async function seedIfEmpty(client, log = () => {}) {
       );
     }
     for (const [i, c] of SEED_COURSES.entries()) {
+      const curriculum = c.title === TEST_COURSE_TITLE ? withTestCourseContent(c.curriculum ?? []) : c.curriculum ?? [];
       await client.query(
         `INSERT INTO courses (category_id, title, subtitle, description, instructor_name, instructor_title,
            instructor_bio, level, language, price, original_price, badge, rating, rating_count, students,
@@ -57,10 +58,11 @@ export async function seedIfEmpty(client, log = () => {}) {
         [c.category_id, c.title, c.subtitle ?? "", c.description ?? "", c.instructor_name ?? "", c.instructor_title ?? "",
          c.instructor_bio ?? "", c.level ?? "Beginner", c.language ?? "English", c.price ?? 0, c.original_price ?? null, c.badge ?? null,
          c.rating ?? 0, c.rating_count ?? 0, c.students ?? 0, c.resources ?? 0, JSON.stringify(c.learn ?? []),
-         JSON.stringify(c.requirements ?? []), JSON.stringify(c.curriculum ?? []), !!c.featured, i]
+         JSON.stringify(c.requirements ?? []), JSON.stringify(curriculum), !!c.featured, i]
       );
     }
   }
+  await client.query("UPDATE courses SET features = features || '{\"learner_setup\": true}'::jsonb WHERE title = $1", [TEST_COURSE_TITLE]);
   const bundles = await client.query("SELECT count(*)::int AS n FROM bundles");
   if (bundles.rows[0].n === 0) {
     // Bundles reference courses by title so this also works on a database that already had courses.

@@ -27,6 +27,7 @@ Demo (browse → search → course → cart): [docs/demo.webm](docs/demo.webm)
 | Instructors: apply → approval → Instructor Studio (own courses, sales, students, reviews) → submit for review → admin publishes | **Real** |
 | Admin console: overview, courses (with review queue), categories, bundles, reviews, instructors, learners & roles, payments, reports | **Real** |
 | Transactional email: welcome, password reset, purchase receipt, application approved, course published | **Real** via Resend; logged to the function output when no key is set |
+| Learner setup (experiment, **UX Foundations only**): pace / practice intensity / goal track chosen on a character-select screen, checkpoints + spaced reviews + track exercises, Sprint streaks and nudges, before/after report | **Real** — per-course flag; see [docs/LEARNER-SETUP.md](docs/LEARNER-SETUP.md) |
 | Notifications panel | Empty state only — nothing generates notifications yet |
 | Admin → Settings tab | Sample form, not wired |
 
@@ -61,7 +62,7 @@ scripts/dev-server.mjs      `npm run dev` — the real API on an embedded Postgr
 scripts/screenshots.mjs     regenerates docs/screenshots and docs/demo.webm
 test/                       unit tests (no DB) · test/integration (real Postgres)
 e2e/                        Playwright specs against the mock server
-docs/                       ARCHITECTURE.md · OPERATIONS.md · QA.md
+docs/                       ARCHITECTURE.md · OPERATIONS.md · QA.md · LEARNER-SETUP.md
 ```
 
 More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (data model, request flows,
@@ -72,9 +73,9 @@ rollback, backup/restore), [docs/QA.md](docs/QA.md) (test strategy, risk matrix,
 
 ```bash
 npm ci
-npm test                 # 57 unit tests, no database
-npm run test:integration # 15 tests: migrations + API on a throwaway embedded Postgres
-npm run test:e2e         # 37 Playwright tests on the real API (npx playwright install chromium once)
+npm test                 # 69 unit tests, no database
+npm run test:integration # 16 tests: migrations + API on a throwaway embedded Postgres
+npm run test:e2e         # 41 Playwright tests on the real API (npx playwright install chromium once)
 npm run dev              # http://localhost:8765 — real API on an embedded Postgres; first signup becomes admin
 ```
 

@@ -21,7 +21,7 @@ const CARD_COLUMNS = `
   c.id, c.category_id, k.name AS category_name, k.icon_bg, k.icon_color,
   c.title, c.subtitle, c.instructor_name, c.level, c.price, c.original_price, c.badge,
   COALESCE(rv.avg, c.rating) AS rating, COALESCE(rv.n, c.rating_count) AS rating_count,
-  c.students, c.featured, c.published, c.status, c.owner_id, c.updated_at,
+  c.students, c.featured, c.published, c.status, c.owner_id, c.updated_at, c.features,
   (SELECT count(*)::int FROM jsonb_array_elements(c.curriculum) s, jsonb_array_elements(s->'lessons')) AS lesson_count,
   (SELECT count(*)::int FROM enrolments e WHERE e.course_id = c.id) AS enrolled_count`;
 
@@ -79,19 +79,32 @@ export const canManage = (ctx, course) => ctx.admin || (ctx.user && course.owner
 export async function courseForViewer(ctx, course) {
   const enrolled = await isEnrolled(ctx.query, ctx.user && ctx.user.id, course.id);
   const full = enrolled || canManage(ctx, course) || course.price === 0;
+  const manage = canManage(ctx, course);
   const curriculum = (course.curriculum || []).map((s) => ({
     ...s,
     lessons: (s.lessons || []).map((l) => (full || l.preview ? l : { ...l, video_url: l.video_url ? "locked" : "" })),
+    // learners get the question count only; questions (and answers) are served by /api/learn
+    quiz: manage ? s.quiz || [] : undefined,
+    quiz_count: (s.quiz || []).length,
+    exercises: manage ? s.exercises || [] : undefined,
   }));
   let progress = [];
+  let needs_setup = false;
   if (ctx.user && enrolled) {
     const { rows } = await ctx.query(
-      "SELECT section_idx, lesson_idx FROM lesson_progress WHERE user_id = $1 AND course_id = $2",
+      "SELECT section_idx, lesson_idx FROM lesson_progress WHERE user_id = $1 AND course_id = $2 AND lesson_idx >= 0",
       [ctx.user.id, course.id]
     );
     progress = rows.map((r) => `${r.section_idx}-${r.lesson_idx}`);
+    if (course.features && course.features.learner_setup) {
+      const { rows: st } = await ctx.query(
+        "SELECT 1 FROM enrolment_settings es JOIN enrolments e ON e.id = es.enrolment_id WHERE e.user_id = $1 AND e.course_id = $2",
+        [ctx.user.id, course.id]
+      );
+      needs_setup = st.length === 0;
+    }
   }
-  return { ...course, curriculum, enrolled, can_manage: canManage(ctx, course), progress };
+  return { ...course, curriculum, enrolled, can_manage: canManage(ctx, course), progress, needs_setup };
 }
 
 export async function listCategories(query) {
@@ -185,7 +198,7 @@ export async function categories(ctx, id) {
 /* ---------- Courses ---------- */
 
 // Editorial picks and the manual statistics are the admin's call.
-const ADMIN_ONLY = ["featured", "badge", "rating", "rating_count", "students"];
+const ADMIN_ONLY = ["featured", "badge", "rating", "rating_count", "students", "features"];
 
 // Instructors can save drafts and submit for review; only admins publish.
 function statusFor(ctx, fields, existing) {

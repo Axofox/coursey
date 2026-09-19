@@ -29,6 +29,7 @@ window.Coursehub = (function () {
     var token = getToken();
     if (token) headers["Authorization"] = "Bearer " + token;
     if (body !== undefined) headers["Content-Type"] = "application/json";
+    try { headers["X-Timezone"] = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {}
 
     var res;
     try {
@@ -97,6 +98,13 @@ window.Coursehub = (function () {
     allOrders: function () { return request("GET", "/orders?all=1"); },
     checkout: function (items) { return request("POST", "/checkout", { items: items }); },
     users: function () { return request("GET", "/users"); },
+    // learner setup (feature-flagged per course)
+    learn: function (courseId) { return request("GET", "/learn/" + courseId); },
+    learnSettings: function (courseId, settings) { return request("PUT", "/learn/" + courseId + "/settings", settings); },
+    learnQuiz: function (courseId, kind, sectionIdx, answers) { return request("POST", "/learn/" + courseId + "/quiz", { kind: kind, section_idx: sectionIdx, answers: answers }); },
+    learnExercise: function (courseId, sectionIdx) { return request("POST", "/learn/" + courseId + "/exercise", { section_idx: sectionIdx }); },
+    event: function (name, courseId, props) { return request("POST", "/events", { name: name, course_id: courseId, props: props || {} }).catch(function () {}); },
+    experiment: function () { return request("GET", "/experiment"); },
     updateUser: function (id, role) { return request("PUT", "/users/" + id, { role: role }); },
     deleteUser: function (id) { return request("DELETE", "/users/" + id); },
     createCourse: function (data) { return request("POST", "/courses", data); },

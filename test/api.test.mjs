@@ -475,9 +475,16 @@ describe("pure helpers", () => {
       { title: "More", lessons: [{ title: "Bare" }] },
     ]);
     assert.deepEqual(out, [
-      { title: "Intro", lessons: [{ title: "Hello", duration: "4:20", video_url: "https://v.example/1", preview: true }] },
-      { title: "More", lessons: [{ title: "Bare", duration: "", video_url: "", preview: false }] },
+      { title: "Intro", lessons: [{ title: "Hello", duration: "4:20", video_url: "https://v.example/1", preview: true }], quiz: [], exercises: [] },
+      { title: "More", lessons: [{ title: "Bare", duration: "", video_url: "", preview: false }], quiz: [], exercises: [] },
     ]);
+    // checkpoint questions and track-tagged exercises are validated too
+    const rich = curriculumList([{ title: "S", lessons: [], quiz: [{ prompt: "Q?", options: ["a", "b"], answer: 1 }], exercises: [{ title: "Do it", body: "…", track: "job_ready" }] }]);
+    assert.equal(rich[0].quiz[0].answer, 1);
+    assert.equal(rich[0].exercises[0].track, "job_ready");
+    assert.equal(curriculumList([{ title: "S", lessons: [], quiz: [{ prompt: "Q?", options: ["a"], answer: 0 }] }]), undefined); // one option
+    assert.equal(curriculumList([{ title: "S", lessons: [], quiz: [{ prompt: "Q?", options: ["a", "b"], answer: 5 }] }]), undefined); // answer out of range
+    assert.equal(curriculumList([{ title: "S", lessons: [], exercises: [{ title: "X", track: "vip" }] }]), undefined); // unknown track
     assert.equal(curriculumList("nope"), undefined);
     assert.equal(curriculumList([{ title: "S", lessons: [{ title: "L", video_url: "javascript:alert(1)" }] }]), undefined);
     assert.equal(curriculumList([{ title: "S", lessons: [{ title: "L", duration: "12:75" }] }]), undefined);

@@ -86,6 +86,7 @@
           <div class="card" style="padding:20px;"><div style="font-size:26px;font-weight:700;font-family:var(--font-display);" data-ov="certificates">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Certificates</div></div>
           <div class="card" style="padding:20px;"><div style="font-size:26px;font-weight:700;font-family:var(--font-display);" data-ov="wishlist">—</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">On your wishlist</div></div>
         </div>
+        <div data-nudges style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;"></div>
         <h3 style="font-size:16px;margin-bottom:16px;">Continue learning</h3>
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:36px;" class="grid-3" data-continue></div>
       </div>
@@ -131,6 +132,19 @@
           <div><label for="set-email">Email</label><input id="set-email" class="input" type="email" disabled></div>
           <div style="display:flex;justify-content:flex-end;border-top:1px solid var(--border);padding-top:18px;margin-top:4px;">
             <button type="submit" class="btn btn-primary">Save changes</button>
+          </div>
+        </form>
+        <form class="card hide" style="padding:28px;display:flex;flex-direction:column;gap:18px;" data-learn-form novalidate>
+          <h3 style="font-size:16px;">Learning setup</h3>
+          <p style="font-size:13px;color:var(--ink-soft);">For courses that offer it. Pace, practice intensity and goal track are stored per course, so each one can be different.</p>
+          <div class="notice notice-error hide" data-learn-error></div>
+          <div><label for="ls-course">Course</label><select id="ls-course" name="course" class="input"></select></div>
+          <div><label for="ls-pace">Pace</label><select id="ls-pace" name="pace" class="input"></select></div>
+          <div><label for="ls-practice">Practice intensity</label><select id="ls-practice" name="practice" class="input"></select></div>
+          <div><label for="ls-track">Goal track</label><select id="ls-track" name="track" class="input"></select></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:18px;margin-top:4px;gap:10px;flex-wrap:wrap;">
+            <a class="navlink" data-learn-setup-link href="#">Open the setup screen</a>
+            <button type="submit" class="btn btn-primary">Save</button>
           </div>
         </form>
         <form class="card" style="padding:28px;display:flex;flex-direction:column;gap:18px;" data-password-form novalidate>

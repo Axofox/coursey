@@ -67,7 +67,11 @@ after(async () => {
 describe("migrations", () => {
   test("apply cleanly on an empty database and seed the catalog", async () => {
     const applied = await migrate(pool);
-    assert.deepEqual(applied, ["001-marketplace.sql", "002-bundles-reviews-applications.sql", "003-preview-lessons.sql", "004-accounts.sql"]);
+    assert.deepEqual(applied, ["001-marketplace.sql", "002-bundles-reviews-applications.sql", "003-preview-lessons.sql", "004-accounts.sql", "005-learner-setup.sql", "006-test-course-content.sql"]);
+    const { rows: [ux] } = await pool.query("SELECT features, curriculum FROM courses WHERE title = 'UX Foundations: Research to Wireframe'");
+    assert.equal(ux.features.learner_setup, true);
+    assert.equal(ux.curriculum[1].quiz.length, 4);
+    assert.equal(ux.curriculum[3].exercises.length, 3);
     const courses = await pool.query("SELECT count(*)::int AS n FROM courses");
     assert.equal(courses.rows[0].n, SEED_COURSES.length);
     const bundles = await pool.query("SELECT count(*)::int AS n FROM bundles");
@@ -91,7 +95,7 @@ describe("migrations", () => {
     await pool.query("INSERT INTO categories (id, name) VALUES ('design', 'Design')");
     await pool.query("INSERT INTO courses (category_id, title, curriculum) VALUES ('design', 'Legacy', $1)", [JSON.stringify([{ title: "S", lessons: [{ title: "L", duration: "1:00" }] }])]);
     const applied = await migrate(pool);
-    assert.deepEqual(applied, ["002-bundles-reviews-applications.sql", "003-preview-lessons.sql", "004-accounts.sql"]);
+    assert.deepEqual(applied, ["002-bundles-reviews-applications.sql", "003-preview-lessons.sql", "004-accounts.sql", "005-learner-setup.sql", "006-test-course-content.sql"]);
     const { rows } = await pool.query("SELECT curriculum->0->'lessons'->0->>'preview' AS p, title, status, published FROM courses");
     assert.equal(rows.length, 1); // existing data kept, no reseed
     assert.equal(rows[0].title, "Legacy");
@@ -230,6 +234,60 @@ describe("API against the real database", () => {
     assert.equal(rows[0].n, 3);
     delete process.env.STRIPE_SECRET_KEY;
     delete process.env.STRIPE_WEBHOOK_SECRET;
+  });
+
+  test("learner setup on the flagged course: setup → plan → checkpoint → review → settings change → experiment", async () => {
+    // ana is enrolled in course 1 (UX Foundations, flagged) via the bundle purchase above
+    assert.equal((await call("GET", "/api/learn/3", { as: "ana" })).status, 404); // not flagged
+    assert.equal((await call("GET", "/api/learn/1")).status, 401);
+    const detail = (await call("GET", "/api/courses/1", { as: "ana" })).body;
+    assert.equal(detail.needs_setup, true);
+    assert.equal(detail.curriculum[0].quiz, undefined); // answers never reach learners
+    assert.equal(detail.curriculum[0].quiz_count, 4);
+    const before = (await call("GET", "/api/learn/1", { as: "ana" })).body;
+    assert.equal(before.settings, null);
+    assert.equal(before.plan, null);
+
+    const set = await call("PUT", "/api/learn/1/settings", { as: "ana", body: { pace: "sprint", practice: "heavy", track: "job_ready" } });
+    assert.equal(set.status, 200);
+    const plan = set.body.plan;
+    assert.deepEqual([...new Set(plan.map((p) => p.type))].sort(), ["checkpoint", "exercise", "lesson", "review"]);
+    const cp0 = plan.find((p) => p.type === "checkpoint" && p.si === 0);
+    assert.equal(cp0.questions.length, 4); // heavy: up to 5, the section has 4
+    assert.equal(cp0.questions[0].answer, undefined);
+    assert.equal(plan.find((p) => p.type === "exercise" && p.si === 0).exercise.track, "job_ready");
+    assert.equal(set.body.nudge.tone, "due"); // sprint, nothing done today
+    assert.equal((await call("GET", "/api/courses/1", { as: "ana" })).body.needs_setup, false);
+
+    // answer the first checkpoint: all correct except one
+    const correct = { 0: 1, 1: 2, 2: 1, 3: 1 }; // from the seed content
+    const answers = cp0.questions.map((q) => ({ section_idx: q.section_idx, q_idx: q.q_idx, choice: q.q_idx === 0 ? 0 : correct[q.q_idx] }));
+    const graded = await call("POST", "/api/learn/1/quiz", { as: "ana", body: { kind: "checkpoint", section_idx: 0, answers } });
+    assert.equal(graded.status, 200);
+    assert.equal(graded.body.total, 4);
+    assert.equal(graded.body.score, 3); // q_idx 0's answer is 1, we chose 0
+    assert.equal(graded.body.state.plan.find((p) => p.type === "checkpoint" && p.si === 0).done, true);
+    assert.equal(graded.body.state.nudge.tone, "done"); // activity today
+    const review1 = graded.body.state.plan.find((p) => p.type === "review" && p.si === 1);
+    assert.equal(review1.questions[0].q_idx, 0); // the wrongly answered question comes back first
+
+    // switch to light practice later: reviews disappear, checkpoints shrink
+    const light = (await call("PUT", "/api/learn/1/settings", { as: "ana", body: { pace: "marathon", practice: "light", track: "exploring" } })).body;
+    assert.equal(light.plan.some((p) => p.type === "review"), false);
+    assert.equal(light.plan.find((p) => p.type === "checkpoint" && p.si === 1).questions.length, 2);
+    assert.equal(light.nudge, null);
+
+    await call("POST", "/api/learn/1/exercise", { as: "ana", body: { section_idx: 0 } });
+    assert.equal((await call("POST", "/api/events", { as: "ana", body: { name: "setup_viewed", course_id: 1 } })).status, 201);
+
+    const exp = (await call("GET", "/api/experiment", { as: "boss" })).body;
+    assert.equal(exp.groups.flagged.courses, 1);
+    assert.equal(exp.groups.flagged.enrolments, 1);
+    assert.equal(exp.groups.flagged.quiz_attempts, 1);
+    assert.ok(exp.groups.control.courses >= 7);
+    assert.ok(exp.events.some((e) => e.name === "setup_completed" && e.flag === true && e.n === 1));
+    assert.ok(exp.events.some((e) => e.name === "settings_changed"));
+    assert.ok(exp.choices.length >= 1);
   });
 
   test("progress: every lesson done issues a certificate that anyone can verify", async () => {

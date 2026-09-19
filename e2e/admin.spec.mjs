@@ -91,7 +91,7 @@ test.describe("admin", () => {
     await page.locator("#cu-title").fill("Playwright 101"); // validation jumped back to step 1
     await page.locator('[data-step-goto="3"]').click();
     await page.locator("#cu-price").fill("25");
-    await page.locator("[data-save-draft]").first().click();
+    await page.locator("[data-save-changes]").click(); // top-bar "Save draft" for a new course
     await expect(page.locator(".toast")).toContainText("Draft saved");
     await expect(page).toHaveURL(/course-upload\.html\?id=\d+/);
     await page.goto("/admin-dashboard.html?tab=courses");

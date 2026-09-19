@@ -131,3 +131,32 @@ span[data-step-label].is-active{ color:var(--ink); }
 .account-dropdown a, .account-dropdown button{ display:block; width:100%; text-align:left; padding:9px 12px; border-radius:8px; font-size:14px; color:var(--ink); }
 .account-dropdown a:hover, .account-dropdown button:hover{ background:var(--surface-alt); }
 .account-dropdown [data-signout]{ color:var(--danger); }
+
+/* ---------- Learner setup: character-select ---------- */
+.pick-group{ margin-bottom:36px; }
+.pick-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.pick{ position:relative; }
+.pick input{ position:absolute; opacity:0; width:1px; height:1px; }
+.pick label{ display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px; padding:22px 16px 18px; border:2px solid var(--border); border-radius:var(--radius-lg); background:var(--surface); cursor:pointer; margin:0; color:var(--ink); font-weight:400; transition:transform .12s ease, border-color .12s ease, box-shadow .12s ease; height:100%; }
+.pick label:hover{ transform:translateY(-2px); border-color:var(--border-strong); }
+.pick input:checked + label{ border-color:var(--accent); box-shadow:0 0 0 4px var(--accent-tint); }
+.pick input:focus-visible + label{ outline:2px solid var(--focus-ring); outline-offset:3px; }
+.pick .avatar{ width:64px; height:64px; border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:30px; }
+.pick .name{ font-family:var(--font-display); font-weight:700; font-size:16px; }
+.pick .tag{ font-size:12px; color:var(--ink-soft); line-height:1.5; }
+.pick .perks{ font-size:11px; color:var(--ink-faint); display:flex; flex-direction:column; gap:3px; margin-top:4px; }
+.pick.stub label{ opacity:.7; }
+.pick .badge{ position:absolute; top:10px; right:10px; }
+@media (max-width:640px){ .pick-grid{ grid-template-columns:1fr; } }
+
+/* ---------- Player: checkpoint / review / exercise cards ---------- */
+.quiz-q{ padding:16px 0; border-bottom:1px solid var(--border); }
+.quiz-q:last-of-type{ border-bottom:none; }
+.quiz-opt{ display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border:1px solid var(--border); border-radius:10px; cursor:pointer; margin:6px 0; font-size:14px; }
+.quiz-opt:hover{ border-color:var(--border-strong); }
+.quiz-opt.chosen{ border-color:var(--accent); background:var(--accent-tint); }
+.quiz-opt.right{ border-color:var(--success); background:var(--success-tint); }
+.quiz-opt.wrong{ border-color:var(--danger); background:var(--danger-tint); }
+.lesson-list .lesson.step-checkpoint .dot, .lesson-list .lesson.step-review .dot{ border-radius:4px; }
+.lesson-list .lesson.step-exercise .dot{ border-radius:4px; border-style:dashed; }
+.streak-pill{ display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:var(--amber-tint); color:var(--amber); font-size:12px; font-weight:700; }

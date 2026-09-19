@@ -113,6 +113,7 @@
     renderReports();
     renderUsers();
     renderOrders();
+    renderExperiment();
   }
 
   function timeAgo(iso) {
@@ -376,6 +377,36 @@
         '<div class="tcell"><span class="badge ' + badges[o.status] + '">' + esc(o.status) + "</span></div>" +
         '<div class="tcell" style="color:var(--ink-soft);">' + timeAgo(o.paid_at || o.created_at) + "</div></div>";
     }).join("") || '<div class="tcell" style="color:var(--ink-faint);">No orders yet.</div>';
+  }
+
+  /* ---------- Learner setup experiment ---------- */
+  async function renderExperiment() {
+    var box = $("[data-experiment-body]");
+    if (!box) return;
+    var x;
+    try { x = await H.api.experiment(); } catch (e) { box.innerHTML = '<span style="font-size:13px;color:var(--danger);">' + esc(e.message) + "</span>"; return; }
+    var pct = function (v) { return v == null ? "\u2014" : Math.round(v * 100) + "%"; };
+    var num1 = function (v) { return v == null ? "\u2014" : v.toFixed(1); };
+    var g = x.groups;
+    var row = function (label, a, b) { return "<tr><td>" + label + '</td><td style="text-align:right;font-weight:600;">' + a + '</td><td style="text-align:right;font-weight:600;">' + b + "</td></tr>"; };
+    var tbl = '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px;"><thead><tr style="color:var(--ink-faint);font-size:11px;text-transform:uppercase;letter-spacing:.03em;"><th style="text-align:left;padding:6px 0;">Metric</th><th style="text-align:right;">Test (' + g.flagged.courses + ")</th><th style=\"text-align:right;\">Control (" + g.control.courses + ")</th></tr></thead><tbody style=\"line-height:2;\">" +
+      row("Enrolments", g.flagged.enrolments, g.control.enrolments) +
+      row("Started (\u2265 1 lesson)", pct(g.flagged.start_rate), pct(g.control.start_rate)) +
+      row("Completed (certificate)", pct(g.flagged.completion_rate), pct(g.control.completion_rate)) +
+      row("Lessons per enrolment", num1(g.flagged.lessons_per_enrolment), num1(g.control.lessons_per_enrolment)) +
+      row("Quiz attempts", g.flagged.quiz_attempts, g.control.quiz_attempts) +
+      "</tbody></table>";
+    var choices = x.choices.length
+      ? '<div style="font-size:13px;margin-bottom:12px;"><strong>Setups chosen:</strong> ' + x.choices.map(function (c) { return esc(c.pace + " / " + c.practice + " / " + c.track) + " \u00D7" + c.n; }).join(" \u00B7 ") + "</div>"
+      : '<div style="font-size:13px;color:var(--ink-faint);margin-bottom:12px;">No learner has completed setup yet.</div>';
+    var events = x.events.length
+      ? '<div style="font-size:12px;color:var(--ink-soft);"><strong>Events:</strong> ' + x.events.map(function (e) { return esc(e.name) + (e.flag ? " (test)" : " (control)") + " " + e.n; }).join(" \u00B7 ") + "</div>"
+      : "";
+    var perCourse = '<details style="margin-top:12px;"><summary style="cursor:pointer;font-size:13px;font-weight:600;">Per course</summary><div style="margin-top:8px;">' +
+      x.courses.map(function (c) { return '<div class="bar-row"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (c.flag ? "\u2605 " : "") + esc(c.title) + '</span><span style="font-size:12px;color:var(--ink-soft);">' + c.enrolments + " enrolled \u00B7 " + c.started + " started \u00B7 " + c.completed + " completed \u00B7 " + c.quiz_attempts + " quiz</span><span></span></div>"; }).join("") +
+      "</div></details>";
+    box.innerHTML = tbl + choices + events + perCourse +
+      '<p style="font-size:12px;color:var(--ink-faint);margin-top:12px;">Read it as a direction, not a verdict: one course vs. the rest confounds course quality with the feature. Treat a completion-rate gap as worth expanding when the test course has \u2265 30 enrolments and the gap survives a week.</p>';
   }
 
   /* ---------- Reports: single-hue magnitude bars, one row per value ---------- */

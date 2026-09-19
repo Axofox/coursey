@@ -60,6 +60,7 @@
         '<span class="badge" style="background:var(--surface-alt);color:var(--ink-soft);">' + esc(c.level) + "</span>" +
         (c.status === "published" ? "" : c.status === "pending" ? '<span class="badge badge-amber">Awaiting review</span>' : '<span class="badge badge-danger">Draft — not visible to learners</span>') +
         (c.enrolled ? '<span class="badge badge-success">Enrolled</span>' : "") +
+        (c.features && c.features.learner_setup ? '<span class="badge badge-accent" title="This course lets you choose pace, practice intensity and goal track">Learner setup \u00B7 beta</span>' : "") +
       "</div>" +
       '<h1 style="font-size:32px;line-height:1.2;margin-bottom:12px;">' + esc(c.title) + "</h1>" +
       (c.subtitle ? '<p style="font-size:16px;color:var(--ink-soft);line-height:1.6;margin-bottom:16px;">' + esc(c.subtitle) + "</p>" : "") +
@@ -145,7 +146,7 @@
                    '<span class="badge" style="background:var(--danger-tint);color:var(--danger);">' + off + "% off</span>" : "") +
           "</div>" +
           (c.enrolled
-            ? '<a href="' + (previewHref || "lesson.html?course=" + c.id) + '" class="btn btn-primary btn-block" style="margin-bottom:20px;">' + (c.progress && c.progress.length ? "Continue learning" : "Start learning") + "</a>"
+            ? '<a href="' + (c.needs_setup ? "setup.html?course=" + c.id : (c.features && c.features.learner_setup ? "lesson.html?course=" + c.id : (previewHref || "lesson.html?course=" + c.id))) + '" class="btn btn-primary btn-block" style="margin-bottom:20px;">' + (c.needs_setup ? "Set up & start" : c.progress && c.progress.length ? "Continue learning" : "Start learning") + "</a>"
             : c.price === 0
               ? '<button class="btn btn-primary btn-block" style="margin-bottom:20px;" data-enrol-free>Enrol for free</button>'
               : '<button class="btn btn-secondary btn-block" style="margin-bottom:10px;' + (inCart ? "color:var(--success);border-color:var(--success);" : "") + '" data-cart-toggle>' + (inCart ? "Added to cart" : "Add to cart") + "</button>" +

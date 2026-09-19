@@ -190,3 +190,74 @@ export const SEED_BUNDLES = [
     courses: ["Product Management 101", "Advanced Excel for Finance"],
   },
 ];
+
+/*
+  Learner-setup test course content: checkpoint questions and track-tagged
+  exercises for "UX Foundations: Research to Wireframe", one entry per section.
+  Applied by the seed on fresh databases and by migration 006 on existing ones.
+*/
+const mc = (prompt, options, answer, explanation = "") => ({ prompt, options, answer, explanation });
+export const TEST_COURSE_TITLE = "UX Foundations: Research to Wireframe";
+export const TEST_COURSE_CONTENT = [
+  { // 1. Getting started
+    quiz: [
+      mc("What is the main outcome you build across this course?", ["A style guide", "A portfolio-ready UX case study", "A coded prototype", "A marketing site"], 1, "Every section feeds the case study."),
+      mc("In the UX process taught here, what comes first?", ["Wireframing", "Visual design", "User research", "Handoff"], 2),
+      mc("Which tool do you set up in section 1?", ["Sketch", "Figma", "Framer", "Illustrator"], 1),
+      mc("Why start from a case study brief?", ["It replaces research", "It gives every exercise a real context", "It's required by Figma", "It shortens the course"], 1),
+    ],
+    exercises: [
+      { track: "job_ready", title: "Write a one-page project brief", body: "Draft a brief for a real product you'd like in your portfolio: problem, audience, success metric, constraints. Aim for something a stakeholder could sign off." },
+      { track: "project", title: "Pick your case-study product", body: "Choose one product idea and write three sentences: who it's for, what it does, what 'done' looks like for this course. Keep it small enough to finish." },
+      { track: "exploring", title: "Map the UX process", body: "In your own words, list the stages of the UX process from the lesson and one question you have about each." },
+    ],
+  },
+  { // 2. User research
+    quiz: [
+      mc("What makes a good interview question?", ["It suggests the answer you want", "It asks about past behaviour, not hypotheticals", "It's a yes/no question", "It's about the competitor"], 1, "Ask what people did, not what they would do."),
+      mc("How many interviews does the course suggest for a lightweight study?", ["1–2", "5–8", "50+", "As many as possible"], 1),
+      mc("What is the goal of synthesis?", ["To transcribe everything", "To turn notes into patterns and insights", "To pick the best participant", "To write the final report"], 1),
+      mc("A research plan should state:", ["Only the questions", "Goal, participants, method and what you'll decide", "The wireframes", "The brand colours"], 1),
+    ],
+    exercises: [
+      { track: "job_ready", title: "Run two real interviews", body: "Recruit two people from your target audience, run 20-minute interviews with your script, and write a one-page synthesis with three insights and the evidence for each." },
+      { track: "project", title: "Interview one person", body: "Run a single 15-minute interview about your product idea and capture the three most surprising things you heard." },
+      { track: "exploring", title: "Critique an interview script", body: "Take the sample script from the lesson and mark every leading or hypothetical question. Rewrite two of them." },
+    ],
+  },
+  { // 3. Information architecture
+    quiz: [
+      mc("Card sorting helps you discover:", ["Colour preferences", "How users group and label content", "Which font to use", "Server structure"], 1),
+      mc("A sitemap shows:", ["The visual style", "The hierarchy of pages/screens", "The database schema", "The team structure"], 1),
+      mc("A user flow answers:", ["What the page looks like", "The steps a user takes to reach a goal", "Who the stakeholders are", "How much it costs"], 1),
+      mc("How do you validate an IA before wireframing?", ["Ship it", "Tree testing or a quick task test with users", "Ask the CEO", "Pick the shortest sitemap"], 1),
+    ],
+    exercises: [
+      { track: "job_ready", title: "Sitemap + two validated flows", body: "Produce a sitemap for your product and two key user flows. Test them with two people using tree-testing style tasks and note what you changed." },
+      { track: "project", title: "Sketch the sitemap", body: "Draw your product's sitemap on one page and the single most important user flow, start to goal." },
+      { track: "exploring", title: "Reverse-engineer an IA", body: "Pick an app you use daily and sketch its sitemap from memory. Where does its structure surprise you?" },
+    ],
+  },
+  { // 4. Wireframing
+    quiz: [
+      mc("Why sketch low-fidelity first?", ["Stakeholders prefer it", "It's cheap to explore many layouts before committing", "Figma requires it", "It looks finished"], 1),
+      mc("A responsive wireframe should show:", ["Only desktop", "Key breakpoints and how content reflows", "Final colours", "Animations"], 1),
+      mc("What makes a wireframe handoff-ready?", ["Pixel-perfect visuals", "Annotated states, flows and edge cases a developer can build from", "A PDF export", "A logo"], 1),
+      mc("Which of these belongs in wireframe annotations?", ["Brand tagline", "What happens on error and empty states", "Marketing copy", "Font licensing"], 1),
+    ],
+    exercises: [
+      { track: "job_ready", title: "Handoff-ready wireframes", body: "Wireframe the two key flows at mobile and desktop, annotate states and edge cases, and share a Figma link a developer could build from. Add it to your case study." },
+      { track: "project", title: "Wireframe the happy path", body: "Wireframe the main flow of your product at one breakpoint and mark the three screens you'd build first." },
+      { track: "exploring", title: "Annotate an existing screen", body: "Take a screenshot of any app screen and annotate its states: loading, empty, error, success." },
+    ],
+  },
+];
+
+// Merges the test-course content into a curriculum (sections without questions/exercises only).
+export function withTestCourseContent(curriculum) {
+  return curriculum.map((s, i) => {
+    const c = TEST_COURSE_CONTENT[i];
+    if (!c) return s;
+    return { ...s, quiz: (s.quiz || []).length ? s.quiz : c.quiz, exercises: (s.exercises || []).length ? s.exercises : c.exercises };
+  });
+}

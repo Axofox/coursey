@@ -42,7 +42,46 @@ export function curriculumList(v) {
       if (video_url && !isHttpUrl(video_url)) return undefined;
       lessons.push({ title: lt, duration, video_url, preview: l.preview === true });
     }
-    out.push({ title, lessons });
+    const quiz = quizList(s.quiz);
+    const exercises = exerciseList(s.exercises);
+    if (quiz === undefined || exercises === undefined) return undefined;
+    out.push({ title, lessons, quiz, exercises });
+  }
+  return out;
+}
+
+export const TRACK_TAGS = ["all", "job_ready", "project", "exploring"];
+
+// Checkpoint questions for a section: multiple choice, 2–6 options, one correct.
+export function quizList(v) {
+  if (v === undefined || v === null) return [];
+  if (!Array.isArray(v) || v.length > 20) return undefined;
+  const out = [];
+  for (const q of v) {
+    if (!q || typeof q !== "object") return undefined;
+    const prompt = clean(q.prompt, 300);
+    if (!prompt) continue;
+    const options = Array.isArray(q.options) ? q.options.map((o) => clean(o, 200)).filter(Boolean) : [];
+    if (options.length < 2 || options.length > 6) return undefined;
+    const answer = Number(q.answer);
+    if (!Number.isInteger(answer) || answer < 0 || answer >= options.length) return undefined;
+    out.push({ prompt, options, answer, explanation: clean(q.explanation, 500) });
+  }
+  return out;
+}
+
+// Exercises shown after a section, tagged by goal track ("all" = every track).
+export function exerciseList(v) {
+  if (v === undefined || v === null) return [];
+  if (!Array.isArray(v) || v.length > 6) return undefined;
+  const out = [];
+  for (const e of v) {
+    if (!e || typeof e !== "object") return undefined;
+    const title = clean(e.title, 200);
+    if (!title) continue;
+    const track = clean(e.track) || "all";
+    if (!TRACK_TAGS.includes(track)) return undefined;
+    out.push({ title, body: clean(e.body, 2000), track });
   }
   return out;
 }
@@ -71,7 +110,16 @@ export const COURSE_FIELDS = {
   curriculum:       { parse: curriculumList, msg: "curriculum must be a list of sections with lessons (duration as m:ss, video_url as http(s) link)", json: true },
   featured:         { parse: (v) => (typeof v === "boolean" ? v : undefined), msg: "featured must be true/false" },
   status:           { parse: (v) => (STATUSES.includes(v) ? v : undefined), msg: `status must be one of: ${STATUSES.join(", ")}` },
+  features:         { parse: featureFlags, msg: "features must be an object of true/false flags", json: true },
 };
+
+export const FEATURE_FLAGS = ["learner_setup"];
+export function featureFlags(v) {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return undefined;
+  const out = {};
+  for (const k of FEATURE_FLAGS) if (v[k] !== undefined) { if (typeof v[k] !== "boolean") return undefined; out[k] = v[k]; }
+  return out;
+}
 
 // `published: true/false` is accepted as shorthand for status published/draft.
 export function normaliseStatus(body) {

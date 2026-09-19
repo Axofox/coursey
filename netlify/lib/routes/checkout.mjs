@@ -11,6 +11,7 @@
 import { json, error, readBody, bodyError } from "../http.mjs";
 import { listCourses, listBundles } from "./catalog.mjs";
 import { createCheckoutSession, verifyWebhook } from "../stripe.mjs";
+import { logEvent } from "./learn.mjs";
 
 const cents = (n) => Math.round(Number(n) * 100);
 
@@ -51,10 +52,14 @@ export async function fulfilOrder(query, order, notify) {
   await query("UPDATE orders SET status = 'paid', paid_at = now() WHERE id = $1", [order.id]);
   const courseIds = [...new Set(order.items.flatMap((i) => i.course_ids.map(Number)))];
   for (const cid of courseIds) {
-    await query(
+    const res = await query(
       "INSERT INTO enrolments (user_id, course_id, order_id) VALUES ($1, $2, $3) ON CONFLICT (user_id, course_id) DO NOTHING",
       [order.user_id, cid, order.id]
     );
+    if (res.rowCount) {
+      const { rows } = await query("SELECT (features->>'learner_setup')::boolean IS TRUE AS flag FROM courses WHERE id = $1", [cid]);
+      await logEvent(query, "enrolled", { userId: order.user_id, courseId: cid, props: { via: "purchase", order_id: order.id, flag: !!(rows[0] && rows[0].flag) } });
+    }
   }
   const { rows } = await query("SELECT * FROM users WHERE id = $1", [order.user_id]);
   if (rows[0] && notify) notify("purchase", { user: rows[0], order });
